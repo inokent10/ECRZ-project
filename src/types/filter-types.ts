@@ -1,0 +1,1 @@
+export type DynamicOption = string | null;
