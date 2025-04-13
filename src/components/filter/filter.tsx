@@ -1,8 +1,9 @@
-import React, { JSX, useState } from "react";
+import React, { JSX, useEffect, useState } from "react";
 import styles from './filter.module.scss';
 import { DYNAMIC_FIELD_OPTIONS, PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS } from "components/const";
 import { getDynamicLabel } from "./utils";
 import { Dropdown, RoomsDropdown, CheckboxDropdown, RangeDropdown } from "./dropdowns";
+import AddFiltersIcon from "./add-filters-icon";
 
 function Filter(): JSX.Element {
   const [selectedType, setSelectedType] = useState<PropertyTypeEnum>(PropertyTypeEnum.Apartments);
@@ -17,6 +18,25 @@ function Filter(): JSX.Element {
 
   const isOpen = (name: string) => openDropdown === name;
   const closeDropdowns = () => setOpenDropdown(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      if (!target.closest(`.${styles.filterItem}, .${styles.dropdownContent}`)) {
+        closeDropdowns();
+      }
+    };
+
+    if (openDropdown !== null) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [openDropdown]);
+
 
   const handleTypeSelect = (displayValue: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -171,7 +191,6 @@ function Filter(): JSX.Element {
               placeholder={option.placeholder}
               inactive={option.inactive}
               onToggle={() => toggleDropdown(option.id)}
-              onSelect={() => {}}
             />
             
             {isOpen(option.id) && (
@@ -181,6 +200,16 @@ function Filter(): JSX.Element {
             )}
           </div>
         ))}
+        <div className={styles.filterButtonsWrapper}>
+          <button className={styles.filterMoreButton}>
+            <AddFiltersIcon />
+            <span>Доп.Фильтры</span>
+          </button>
+          <button
+            className={`${styles.filterShowButton} ${styles.isDisabledButton}`}>
+            Показать
+          </button>
+        </div>
       </div>
     </div>
   );

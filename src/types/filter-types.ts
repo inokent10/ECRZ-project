@@ -6,12 +6,10 @@ type DropdownProps = {
     placeholder?: string;
     inactive?: boolean;
     onToggle: () => void;
-    onSelect: (value: string, e: React.MouseEvent) => void;
   }
   
   type RoomsDropdownProps = {
     selectedValue: string[];
-    // onSelect: (value: string) => void;
     onReset: () => void;
     onApply: (value: string[]) => void;
   }
@@ -19,7 +17,6 @@ type DropdownProps = {
   type CheckboxDropdownProps = {
     options: string[];
     selectedValue: string[];
-    // onSelect: (value: string) => void;
     onReset: () => void;
     onApply: (value: string[]) => void;
   }

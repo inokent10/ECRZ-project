@@ -72,7 +72,11 @@ const RoomsDropdown = ({ selectedValue, onReset, onApply }: RoomsDropdownProps) 
         <button className={styles.resetButton} onClick={onReset}>
           Сбросить
         </button>
-        <button className={styles.applyButton} onClick={handleApply}>
+              <button
+                  className={`${styles.applyButton} ${localSelected.length === 0 ? styles.isDisabledButton : ''}`}
+                  onClick={handleApply}
+                  disabled={localSelected.length === 0}
+              >
           Применить
         </button>
       </div>
@@ -124,7 +128,11 @@ const CheckboxDropdown = ({ options, selectedValue, onReset, onApply }: checkbox
         <button className={styles.resetButton} onClick={onReset}>
           Сбросить
         </button>
-        <button className={styles.applyButton} onClick={handleApply}>
+              <button
+                  className={`${styles.applyButton} ${localSelected.length === 0 ? styles.isDisabledButton : ''}`}
+                  onClick={handleApply}
+                  disabled={localSelected.length === 0}
+              >
           Применить
         </button>
       </div>
@@ -140,8 +148,10 @@ const RangeDropdown = ({
     onReset,
     onApply
 }: RangeDropdownProps) => {
-  const [minValue, setMinValue] = useState("");
+    const [minValue, setMinValue] = useState("");
     const [maxValue, setMaxValue] = useState("");
+    
+    const isDisabled = minValue === "" && maxValue === "";
     
     useEffect(() => {
         setMinValue(valueMin);
@@ -194,7 +204,10 @@ const RangeDropdown = ({
         <button className={styles.resetButton} onClick={onReset}>
           Сбросить
         </button>
-        <button className={styles.applyButton} onClick={handleApply}>
+              <button
+                  className={`${styles.applyButton} ${isDisabled ? styles.isDisabledButton : ''}`}
+                  onClick={handleApply}
+              >
           Применить
         </button>
       </div>
