@@ -1,66 +1,14 @@
 import React, { JSX, useState } from "react";
 import styles from './filter.module.scss';
 import { DYNAMIC_FIELD_OPTIONS, PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS } from "components/const";
-import { DynamicOption } from "types/filter-types";
 import { getDynamicLabel } from "./utils";
-
-interface DropdownProps {
-  label: string;
-  value: string | null;
-  options: string[];
-  isOpen: boolean;
-  placeholder?: string;
-  inactive?: boolean;
-  onToggle: () => void;
-  onSelect: (value: string, e: React.MouseEvent) => void;
-}
-
-const Dropdown = ({
-  label,
-  value,
-  options,
-  isOpen,
-  placeholder,
-  inactive = false,
-  onToggle,
-  onSelect
-}: DropdownProps): JSX.Element => {
-  const displayValue = value || placeholder || "";
-  
-  return (
-    <div
-      className={`${styles.select} ${inactive ? styles.inactiveState : ""}`}
-      onClick={onToggle}
-    >
-      {(value || !placeholder) && (
-        <div className={styles.label}>
-          {label}
-        </div>
-      )}
-
-      <div className={styles.typeLayout}>
-        <span style={!value && placeholder ? { color: '#73777c' } : {}}>
-          {displayValue}
-        </span>
-        <span className={`${styles.arrow} ${isOpen ? styles.arrowUp : styles.arrowDown}`}></span>
-        
-        {isOpen && (
-          <ul className={styles.dropdown}>
-            {options.map((option) => (
-              <li key={option} onClick={(e) => onSelect(option, e)}>
-                {option}
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    </div>
-  );
-};
+import { Dropdown, RoomsDropdown, CheckboxDropdown, RangeDropdown } from "./dropdowns";
 
 function Filter(): JSX.Element {
   const [selectedType, setSelectedType] = useState<PropertyTypeEnum>(PropertyTypeEnum.Apartments);
-  const [selectedDynamic, setSelectedDynamic] = useState<DynamicOption>(null);
+  const [selectedDynamic, setSelectedDynamic] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
+  const [areaRange, setAreaRange] = useState({ min: "", max: "" });
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const toggleDropdown = (name: string) => {
@@ -68,26 +16,111 @@ function Filter(): JSX.Element {
   };
 
   const isOpen = (name: string) => openDropdown === name;
-
   const closeDropdowns = () => setOpenDropdown(null);
 
   const handleTypeSelect = (displayValue: string, e: React.MouseEvent) => {
     e.stopPropagation();
-      const enumValue = Object.entries(TYPE_DISPLAY_NAMES).find(
-        ([_, value]) => value === displayValue
-      )?.[0] as PropertyTypeEnum;
-      
-      if (enumValue) {
-        setSelectedType(enumValue);
-        setSelectedDynamic(null);
-        closeDropdowns();
-      }
+    const enumValue = Object.entries(TYPE_DISPLAY_NAMES).find(
+      ([_, value]) => value === displayValue
+    )?.[0] as PropertyTypeEnum;
+    
+    if (enumValue) {
+      setSelectedType(enumValue);
+      setSelectedDynamic([]);
+      closeDropdowns();
+    }
   };
 
   const handleDynamicSelect = (value: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setSelectedDynamic(value as DynamicOption);
+    setSelectedDynamic(prev => 
+      prev.includes(value) 
+        ? prev.filter(item => item !== value) 
+        : [...prev, value]
+    );
     closeDropdowns();
+  };
+
+  const handleReset = () => {
+    if (openDropdown === 'dynamic') {
+      setSelectedDynamic([]);
+    } else if (openDropdown === 'price') {
+      setPriceRange({ min: "", max: "" });
+    } else if (openDropdown === 'area') {
+      setAreaRange({ min: "", max: "" });
+    }
+  };
+
+  const handleDynamicApply = (values: string[]) => {
+    setSelectedDynamic(values);
+    closeDropdowns();
+  };
+
+  const renderDropdownContent = () => {
+    if (openDropdown === 'type') {
+      return (
+        <ul className={styles.typeDropdown}>
+          {TYPE_OPTIONS.map((option) => (
+            <li key={option} onClick={(e) => handleTypeSelect(option, e)}>
+              {option}
+            </li>
+          ))}
+        </ul>
+      );
+    } else if (openDropdown === 'dynamic') {
+      if (selectedType === PropertyTypeEnum.Apartments) {
+        return (
+          <RoomsDropdown 
+            selectedValue={selectedDynamic}
+            onReset={handleReset}
+            onApply={handleDynamicApply}
+          />
+        );
+      } else {
+        return (
+          <CheckboxDropdown 
+            options={DYNAMIC_FIELD_OPTIONS[selectedType] || []}
+            selectedValue={selectedDynamic}
+            onReset={handleReset}
+            onApply={handleDynamicApply}
+          />
+        );
+      }
+    } else if (openDropdown === 'price') {
+      return (
+        <RangeDropdown 
+          title="Стоимость"
+          minPlaceholder="10"
+          maxPlaceholder="20"
+          currency="₽"
+          valueMin={priceRange.min}
+          valueMax={priceRange.max}
+          onReset={() => setPriceRange({ min: "", max: "" })}
+          onApply={(min, max) => {
+            setPriceRange({ min, max });
+            closeDropdowns();
+          }}
+        />
+      );
+    } else if (openDropdown === 'area') {
+      return (
+        <RangeDropdown 
+          title="Площадь"
+          minPlaceholder="20"
+          maxPlaceholder="40"
+          currency={selectedType === PropertyTypeEnum.Apartments ? "м²" : "сот."}
+          valueMin={areaRange.min}
+          valueMax={areaRange.max}
+          onReset={() => setAreaRange({ min: "", max: "" })}
+          onApply={(min, max) => {
+            setAreaRange({ min, max });
+            closeDropdowns();
+          }}
+        /> 
+      );
+    }
+    
+    return null;
   };
   
   const filterOptions = [
@@ -95,36 +128,61 @@ function Filter(): JSX.Element {
       id: 'type',
       label: 'Тип',
       value: TYPE_DISPLAY_NAMES[selectedType],
-      options: TYPE_OPTIONS,
+      placeholder: 'Тип',
+      inactive: false,
       onSelect: handleTypeSelect
     },
     {
       id: 'dynamic',
       label: getDynamicLabel(selectedType),
-      value: selectedDynamic,
-      options: DYNAMIC_FIELD_OPTIONS[selectedType] || [],
+      value: selectedDynamic.length > 0 ? selectedDynamic.join(', ') : null,
       placeholder: getDynamicLabel(selectedType),
       inactive: !selectedDynamic,
       onSelect: handleDynamicSelect
+    },
+    {
+      id: 'price',
+      label: 'Стоимость',
+      value: priceRange.min || priceRange.max ? `${priceRange.min} - ${priceRange.max} тыс.` : null,
+      placeholder: 'Стоимость',
+      inactive: !priceRange.min && !priceRange.max,
+      onSelect: () => {}
+    },
+    {
+      id: 'area',
+      label: 'Площадь',
+      value: areaRange.min || areaRange.max ? `${areaRange.min} - ${areaRange.max} ${selectedType === PropertyTypeEnum.Apartments ? "м²" : "сот."}` : null,
+      placeholder: 'Площадь',
+      inactive: !areaRange.min && !areaRange.max,
+      onSelect: () => {}
     }
   ];
 
   return (
-    <>
-      {filterOptions.map(option => (
-        <Dropdown
-          key={option.id}
-          label={option.label}
-          value={option.value}
-          options={option.options}
-          isOpen={isOpen(option.id)}
-          placeholder={option.placeholder}
-          inactive={option.inactive}
-          onToggle={() => toggleDropdown(option.id)}
-          onSelect={option.onSelect}
-        />
-      ))}
-    </>
+    <div className={styles.filterContainer}>
+      <div className={styles.filter}>
+        {filterOptions.map(option => (
+          <div key={option.id} className={styles.filterItem}>
+            <Dropdown
+              label={option.label}
+              value={option.value}
+              options={[]}
+              isOpen={isOpen(option.id)}
+              placeholder={option.placeholder}
+              inactive={option.inactive}
+              onToggle={() => toggleDropdown(option.id)}
+              onSelect={() => {}}
+            />
+            
+            {isOpen(option.id) && (
+              <div className={`${styles.dropdownContent} ${option.id === 'type' ? styles.typeDropdownContent : ''}`}>
+                {renderDropdownContent()}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

@@ -46,9 +46,9 @@ function CatalogPage(): JSX.Element {
                 </div>
             </div>
 
-            <div className={styles.filterWrapper}>
+            {/* <div className={styles.filterWrapper}> */}
                 <Filter />
-            </div>
+            {/* </div> */}
         </div>
     )
 }

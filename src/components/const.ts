@@ -46,15 +46,17 @@ const TYPE_DISPLAY_NAMES: Record<PropertyTypeEnum, string> = {
     [PropertyTypeEnum.Plots]: ['Участки до 10 сот.', 'Участки до 20 сот.', 'Участки ИЖС', 'Участки Промназначения', 'Все объекты'],
     [PropertyTypeEnum.Commercial]: ['Офис', 'Склады', 'Свободное назначение', 'Все объекты'],
     [PropertyTypeEnum.JuridicalInquiry]: ['Продажа недвижимости', 'Помощь в оформлении кредита', 'Оформление технической документации', 'Вывод в нежилой фонд'],
-  };
+   };
+
+const REG_ONLY_NUMBERS = /[^0-9]/g;
 
 export {
     PageNames,
     AppRoute,
     SORT_OPTIONS,
     DYNAMIC_FIELD_OPTIONS,
-    // typeOptions,
     TYPE_OPTIONS,
     PropertyTypeEnum,
-    TYPE_DISPLAY_NAMES
+    TYPE_DISPLAY_NAMES,
+    REG_ONLY_NUMBERS
 }
