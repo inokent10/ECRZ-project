@@ -1,7 +1,7 @@
 import React, { JSX, useEffect, useState } from "react";
 import styles from './filter.module.scss';
-import { DYNAMIC_FIELD_OPTIONS, PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS } from "components/const";
 import { getDynamicLabel } from "./utils";
+import { PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS, DYNAMIC_FIELD_OPTIONS } from "../const";
 import { Dropdown, RoomsDropdown, CheckboxDropdown, RangeDropdown } from "./dropdowns";
 import AddFiltersIcon from "./add-filters-icon";
 
@@ -41,7 +41,7 @@ function Filter(): JSX.Element {
   const handleTypeSelect = (displayValue: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const enumValue = Object.entries(TYPE_DISPLAY_NAMES).find(
-      ([_, value]) => value === displayValue
+      ([, value]) => value === displayValue
     )?.[0] as PropertyTypeEnum;
     
     if (enumValue) {

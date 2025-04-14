@@ -1,7 +1,7 @@
 import { JSX, useEffect, useRef, useState } from "react";
 
 import Breadcrumbs from "../components/breadcrumbs/breadcrumbs";
-import Filter from "components/filter/filter";
+import Filter from "../components/filter/filter";
 import SortMenu from "../components/sort-menu/sort-menu";
 
 import styles from './catalog-page.module.scss'
