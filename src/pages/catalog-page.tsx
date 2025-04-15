@@ -1,54 +1,36 @@
-import { JSX, useEffect, useRef, useState } from "react";
-
-import Breadcrumbs from "../components/breadcrumbs/breadcrumbs";
-import Filter from "../components/filter/filter";
-import SortMenu from "../components/sort-menu/sort-menu";
+import { JSX, useEffect} from "react";
 
 import styles from './catalog-page.module.scss'
 
-import { SORT_OPTIONS } from "../components/const";
+import CardsList from "@/components/cards/cards-list";
+import Header from "@/components/header/header";
+import { useAppDispatch, useAppSelector } from "@/store/hook";
+import { fetchApartmentsAction } from "@/store/slice/apartment-slice/apartment-slice";
+import SpinnerLoader from "@/components/spinner-loader/spiner-loader";
 
 function CatalogPage(): JSX.Element {
-    const [currentSort, setCurrentSort] = useState('relevance')
-    const [isOpen, setIsOpen] = useState(false);
-
-    const sortMenuRef = useRef<HTMLDivElement>(null);
+    const dispatch = useAppDispatch();
+    const {apartments, error, isLoading} = useAppSelector((state) => state.apartments)
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (sortMenuRef.current && 
-                !sortMenuRef.current.contains(event.target as Node)
-            ) {
-                setIsOpen(false);
+        const fetchData = async () => {
+            try {
+                dispatch(fetchApartmentsAction());
+            } catch {
+               return error
             }
-        };
-        
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isOpen]);
+        }
+
+        fetchData();
+    }, [dispatch, error])
 
     return (
         <div className={styles.wrapper}>
-            <Breadcrumbs />
-            <div className={styles.headerWrapper}>
-                <div className={styles.titleWrapper}>
-                    <h1>Купить 1-комнатную квартиру</h1>
-                    <p className={styles.totalCount}>100 результатов</p>
-                </div>
-                <div ref={sortMenuRef}>
-                <SortMenu
-                    options={SORT_OPTIONS}
-                    currentOption={currentSort}
-                    onSortChange={setCurrentSort}
-                    onOpen={setIsOpen}
-                    isOpen={isOpen}
-                />
-                </div>
-            </div>
+            <Header />
+            
+            {isLoading && <SpinnerLoader />}
 
-            {/* <div className={styles.filterWrapper}> */}
-                <Filter />
-            {/* </div> */}
+            <CardsList cards={apartments} />
         </div>
     )
 }

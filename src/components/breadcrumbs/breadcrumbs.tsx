@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import styles from './breadcrumbs.module.scss';
-import { AppRoute, PageNames } from '../const';
+import { AppRoute, PageNames } from '../../const';
 
 const breadcrumbs = [
     { name: PageNames.Home.name, path: AppRoute.Home, key: PageNames.Home.key },

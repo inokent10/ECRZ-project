@@ -1,4 +1,4 @@
-import { PropertyTypeEnum } from "../const";
+import { PropertyTypeEnum } from "../../const";
 
 const getDynamicLabel = (type: PropertyTypeEnum): string => {
     switch (type) {

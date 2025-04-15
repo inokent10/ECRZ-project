@@ -1,7 +1,7 @@
 import { JSX, useEffect, useState } from "react";
-import { DropdownProps, RoomsDropdownProps, checkboxDropdownProps, RangeDropdownProps } from "@/types/filter-types";
+import { DropdownProps, RoomsDropdownProps, checkboxDropdownProps, RangeDropdownProps } from "@/types/filter-types/filter-types";
 import styles from './filter.module.scss';
-import { REG_ONLY_NUMBERS } from "../const";
+import { REG_ONLY_NUMBERS } from "../../const";
 
 const Dropdown = ({
   label,

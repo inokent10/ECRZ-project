@@ -2,6 +2,13 @@ enum AppRoute {
     Home = '/',
 }
 
+enum ApiRoute {
+    Apartments = '/apartments',
+    ApartmentsFilters = `${Apartments}/filters`,
+    Houses = '/houses',
+    HousesFilters = `${Houses}/filters`,
+}
+
 enum PropertyTypeEnum {
     Apartments = 'Apartments',
     Houses = 'Houses',
@@ -53,6 +60,7 @@ const REG_ONLY_NUMBERS = /[^0-9]/g;
 export {
     PageNames,
     AppRoute,
+    ApiRoute,
     SORT_OPTIONS,
     DYNAMIC_FIELD_OPTIONS,
     TYPE_OPTIONS,

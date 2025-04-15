@@ -1,0 +1,57 @@
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 32px 0;
+    gap: 8px;
+  }
+  
+  .pageButton {
+    min-width: 56px;
+    height: 56px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff00;
+    border: 1px solid #e8e8e800;
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: #F5F5F5;
+    }
+    
+    &.active {
+      background-color: #4169E1;
+      color: #FFFFFF;
+      border-color: #4169E1;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  .navButton {
+    font-weight: bold;
+  }
+  
+  .ellipsis {
+    padding: 0 8px;
+    color: #6E7491;
+  }
+  
+  @media (max-width: 768px) {
+    .pagination {
+      gap: 4px;
+    }
+    
+    .pageButton {
+      min-width: 36px;
+      height: 36px;
+      font-size: 14px;
+    }
+  }

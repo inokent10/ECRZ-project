@@ -1,0 +1,26 @@
+.title {
+    width: 532px;
+    height: 46px;
+}
+
+.headerWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.titleWrapper {
+    display: flex;
+    align-content: center;
+    align-items: center;
+}
+
+.totalCount {
+    color: #73777C;
+}
+
+.filterWrapper {
+    background-color: #ffffff;
+    display: flex;
+    margin-bottom: 1rem;
+}

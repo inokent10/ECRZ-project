@@ -1,7 +1,7 @@
 import React, { JSX, useEffect, useState } from "react";
 import styles from './filter.module.scss';
 import { getDynamicLabel } from "./utils";
-import { PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS, DYNAMIC_FIELD_OPTIONS } from "../const";
+import { PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS, DYNAMIC_FIELD_OPTIONS } from "../../const";
 import { Dropdown, RoomsDropdown, CheckboxDropdown, RangeDropdown } from "./dropdowns";
 import AddFiltersIcon from "./add-filters-icon";
 

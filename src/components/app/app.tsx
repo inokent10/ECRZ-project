@@ -3,7 +3,7 @@ import { JSX } from "react";
 
 import CatalogPage from "../../pages/catalog-page";
 
-import { AppRoute } from "../const";
+import { AppRoute } from "../../const";
 
 function App(): JSX.Element {
   return (
