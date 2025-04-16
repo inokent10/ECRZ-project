@@ -57,6 +57,19 @@ const TYPE_DISPLAY_NAMES: Record<PropertyTypeEnum, string> = {
 
 const REG_ONLY_NUMBERS = /[^0-9]/g;
 
+const DEFAULT_IMAGES = {
+  apartment: [
+    'public/image/huy-nguyen-AB-q9lwCVv8-unsplash.jpg',
+    'public/image/modern-kitchen-interior-design.jpg',
+    'public/image/skyscraper-8173578.jpg',
+  ],
+  house: [
+    'public/image/s-tsuchiya-f41xZ19S9dY-unsplash.jpg',
+    'public/image/3d-room-interior-with-classic-design-furniture.jpg',
+    'public/image/tranquil-space-with-plants.jpg',
+  ]
+};
+
 export {
     PageNames,
     AppRoute,
@@ -66,5 +79,6 @@ export {
     TYPE_OPTIONS,
     PropertyTypeEnum,
     TYPE_DISPLAY_NAMES,
-    REG_ONLY_NUMBERS
+    REG_ONLY_NUMBERS,
+    DEFAULT_IMAGES
 }

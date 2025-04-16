@@ -31,8 +31,21 @@
   .imageContainer {
     position: relative;
     width: 100%;
-    padding-top: 70%; // Aspect ratio for the image
     overflow: hidden;
+    height: 214px;
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+
+    &:hover {
+      .imageNav,
+      .imageDots {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
   }
   
   .propertyImage {
@@ -53,8 +66,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 10px;
     z-index: 2;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
   }
   
   .navButton {
@@ -64,15 +81,19 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: rgba(255, 235, 235, 0.7);
+    background-color: rgb(255, 255, 255);
     border: none;
     cursor: pointer;
     transition: background-color 0.2s;
     font-size: 24px;
     color: #333;
+
+    opacity: 0.9;
+    transition: opacity 0.2s ease;
     
     &:hover {
       background-color: rgba(255, 235, 235, 0.9);
+      opacity: 1;
     }
     
     &.prevButton {
@@ -93,6 +114,18 @@
     justify-content: center;
     gap: 6px;
     z-index: 2;
+
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    pointer-events: none;
+  }
+
+  .imageContainer:hover {
+    .imageNav,
+    .imageDots {
+      pointer-events: auto;
+    }
   }
   
   .dot {

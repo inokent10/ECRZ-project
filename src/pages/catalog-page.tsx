@@ -29,6 +29,7 @@ function CatalogPage(): JSX.Element {
             <Header />
             
             {isLoading && <SpinnerLoader />}
+            {error && <h2>{error}</h2>}
 
             <CardsList cards={apartments} />
         </div>

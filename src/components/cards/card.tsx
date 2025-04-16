@@ -1,7 +1,8 @@
 import { JSX } from "react";
 import { CardsEntity } from "@/types/cards-types/cards-types";
 import styles from './cards.module.scss';
-import ImageCard from "./image";
+import ImageCard from "./image-card";
+import PropertyIcon from "./property-icon";
 
 type CardProperty = {
     card: CardsEntity;
@@ -25,7 +26,7 @@ function Card({ card }: CardProperty): JSX.Element {
 
     return (
         <div className={styles.card}>
-            <ImageCard name={card.name} media={card.media} />
+            <ImageCard name={card.name} media={card.media} type={card.type} />
 
             <div className={styles.cardContent}>
         {card.type === 'apartment' ? (
@@ -102,25 +103,5 @@ function Card({ card }: CardProperty): JSX.Element {
         </div>
     )
 };
-
-type PropertyIconProps = {
-    type: 'livingArea' | 'kitchenArea' | 'floor' | 'area';
-  }
-
-function PropertyIcon({ type }: PropertyIconProps): JSX.Element {
-    // You can replace these with actual SVG icons
-    switch (type) {
-      case 'livingArea':
-        return <span className={styles.iconContainer}>🏠</span>;
-      case 'kitchenArea':
-        return <span className={styles.iconContainer}>🍽️</span>;
-      case 'floor':
-        return <span className={styles.iconContainer}>📐</span>;
-      case 'area':
-        return <span className={styles.iconContainer}>🌳</span>;
-      default:
-        return <span className={styles.iconContainer}>📊</span>;
-    }
-  } 
 
 export default Card;
