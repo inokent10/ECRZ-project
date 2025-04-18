@@ -34,25 +34,43 @@ const Dropdown = ({
   );
 };
 
-const RoomsDropdown = ({ selectedValue, onReset, onApply }: RoomsDropdownProps) => {
-    const [localSelected, setLocalSelected] = useState([...selectedValue]);
-    const roomOptions = ["Студия", "1", "2", "3", "4+"];
+const RoomsDropdown = ({ selectedValue, onReset, onApply, availableOptions }: RoomsDropdownProps) => {
+  const [localSelected, setLocalSelected] = useState([...selectedValue]);
+  const roomOptions = ["Студия", "1", "2", "3", "4+"];
 
-    useEffect(() => {
-        setLocalSelected(selectedValue);
-    }, [selectedValue]);
+  useEffect(() => {
+    setLocalSelected(selectedValue);
+  }, [selectedValue]);
     
-    const handleSelect = (room: string) => {
-        const newSelection = localSelected.includes(room)
-          ? localSelected.filter(item => item !== room)
-          : [...localSelected, room];
+  const handleSelect = (room: string) => {
+    const newSelection = localSelected.includes(room)
+      ? localSelected.filter(item => item !== room)
+      : [...localSelected, room];
           
-        setLocalSelected(newSelection);
-      };
+    setLocalSelected(newSelection);
+  };
     
-      const handleApply = () => {
-        onApply(localSelected);
-      };
+  const handleApply = () => {
+    onApply(localSelected);
+  };
+
+  const isOptionAvailable = (option: string): boolean => {
+    if (!availableOptions || availableOptions.length === 0) return true;
+    
+    const mappedOption = mapRoomDisplayToServerValue(option);
+    return availableOptions.includes(mappedOption);
+  };
+
+  const mapRoomDisplayToServerValue = (display: string): string => {
+    const mapping: Record<string, string> = {
+      "Студия": "STUDIO",
+      "1": "ONE_ROOM",
+      "2": "TWO_ROOM",
+      "3": "THREE_ROOM",
+      "4+": "FOUR_PLUS_ROOM"
+    };
+    return mapping[display] || display;
+  };
   
   return (
     <div className={styles.roomsDropdown}>
@@ -60,8 +78,12 @@ const RoomsDropdown = ({ selectedValue, onReset, onApply }: RoomsDropdownProps) 
         {roomOptions.map((room) => (
           <div 
             key={room}
-            className={`${styles.roomOption} ${localSelected.includes(room) ? styles.selected : ''}`}
-            onClick={() => handleSelect(room)}
+            className={`
+              ${styles.roomOption} 
+              ${localSelected.includes(room) ? styles.selected : ''}
+              ${!isOptionAvailable(room) ? styles.isDisabledButton : ''}
+            `}
+            onClick={() => isOptionAvailable(room) && handleSelect(room)}
           >
             {room}
           </div>
@@ -72,11 +94,11 @@ const RoomsDropdown = ({ selectedValue, onReset, onApply }: RoomsDropdownProps) 
         <button className={styles.resetButton} onClick={onReset}>
           Сбросить
         </button>
-              <button
-                  className={`${styles.applyButton} ${localSelected.length === 0 ? styles.isDisabledButton : ''}`}
-                  onClick={handleApply}
-                  disabled={localSelected.length === 0}
-              >
+        <button
+          className={`${styles.applyButton} ${localSelected.length === 0 ? styles.isDisabledButton : ''}`}
+          onClick={handleApply}
+          disabled={localSelected.length === 0}
+        >
           Применить
         </button>
       </div>
@@ -84,24 +106,41 @@ const RoomsDropdown = ({ selectedValue, onReset, onApply }: RoomsDropdownProps) 
   );
 };
 
-const CheckboxDropdown = ({ options, selectedValue, onReset, onApply }: checkboxDropdownProps) => {
-    const [localSelected, setLocalSelected] = useState([...selectedValue]);
+const CheckboxDropdown = ({ options, selectedValue, onReset, onApply, availableOptions }: checkboxDropdownProps) => {
+  const [localSelected, setLocalSelected] = useState([...selectedValue]);
 
-    useEffect(() => {
-        setLocalSelected(selectedValue);
-    }, [selectedValue]);
+  useEffect(() => {
+    setLocalSelected(selectedValue);
+  }, [selectedValue]);
     
-    const handleSelect = (option: string) => {
-        const newSelection = localSelected.includes(option)
-          ? localSelected.filter(item => item !== option)
-          : [...localSelected, option];
+  const handleSelect = (option: string) => {
+    const newSelection = localSelected.includes(option)
+      ? localSelected.filter(item => item !== option)
+      : [...localSelected, option];
           
-        setLocalSelected(newSelection);
-      };
+    setLocalSelected(newSelection);
+  };
     
-      const handleApply = () => {
-        onApply(localSelected);
-      };
+  const handleApply = () => {
+    onApply(localSelected);
+  };
+
+  const isOptionAvailable = (option: string): boolean => {
+    if (!availableOptions || availableOptions.length === 0) return true;
+    
+    const mappedOption = mapBuildingTypeDisplayToServerValue(option);
+    return availableOptions.includes(mappedOption);
+  };
+
+  const mapBuildingTypeDisplayToServerValue = (display: string): string => {
+    const mapping: Record<string, string> = {
+      "Дом": "RESIDENTIAL",
+      "Дача": "GARDEN",
+      "Коттедж": "COTTAGE",
+      "Таунхаус": "TOWNHOUSE"
+    };
+    return mapping[display] || display;
+  };
       
   return (
     <div className={styles.checkboxDropdown}>
@@ -109,17 +148,23 @@ const CheckboxDropdown = ({ options, selectedValue, onReset, onApply }: checkbox
         {options.map((option) => (
           <div 
             key={option}
-            className={styles.checkboxOption}
-            onClick={() => handleSelect(option)}
-            >
+            className={`
+              ${styles.checkboxOption}
+              ${!isOptionAvailable(option) ? styles.disabled : ''}
+            `}
+            onClick={() => isOptionAvailable(option) && handleSelect(option)}
+          >
             <input 
               type="checkbox" 
               id={option} 
               name="checkboxGroup" 
               checked={localSelected.includes(option)}
+              disabled={!isOptionAvailable(option)}
               readOnly
             />
-            <label>{option}</label>
+            <label className={!isOptionAvailable(option) ? styles.disabledText : ''}>
+              {option}
+            </label>
           </div>
         ))}
       </div>
@@ -128,11 +173,11 @@ const CheckboxDropdown = ({ options, selectedValue, onReset, onApply }: checkbox
         <button className={styles.resetButton} onClick={onReset}>
           Сбросить
         </button>
-              <button
-                  className={`${styles.applyButton} ${localSelected.length === 0 ? styles.isDisabledButton : ''}`}
-                  onClick={handleApply}
-                  disabled={localSelected.length === 0}
-              >
+        <button
+          className={`${styles.applyButton} ${localSelected.length === 0 ? styles.isDisabledButton : ''}`}
+          onClick={handleApply}
+          disabled={localSelected.length === 0}
+        >
           Применить
         </button>
       </div>
@@ -141,36 +186,38 @@ const CheckboxDropdown = ({ options, selectedValue, onReset, onApply }: checkbox
 };
 
 const RangeDropdown = ({
-    title,
-    valueMin, 
-    valueMax,
-    currency,
-    onReset,
-    onApply
+  title,
+  minPlaceholder,
+  maxPlaceholder,
+  valueMin, 
+  valueMax,
+  currency,
+  onReset,
+  onApply
 }: RangeDropdownProps) => {
-    const [minValue, setMinValue] = useState("");
-    const [maxValue, setMaxValue] = useState("");
+  const [minValue, setMinValue] = useState("");
+  const [maxValue, setMaxValue] = useState("");
     
-    const isDisabled = minValue === "" && maxValue === "";
+  const isDisabled = minValue === "" && maxValue === "";
     
-    useEffect(() => {
-        setMinValue(valueMin);
-        setMaxValue(valueMax);
-      }, [valueMin, valueMax]);
+  useEffect(() => {
+    setMinValue(valueMin);
+    setMaxValue(valueMax);
+  }, [valueMin, valueMax]);
     
-      const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.replace(REG_ONLY_NUMBERS, '');
-        setMinValue(value);
-      };
+  const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(REG_ONLY_NUMBERS, '');
+    setMinValue(value);
+  };
     
-      const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.replace(REG_ONLY_NUMBERS, '');
-        setMaxValue(value);
-      };
+  const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(REG_ONLY_NUMBERS, '');
+    setMaxValue(value);
+  };
     
-      const handleApply = () => {
-        onApply(minValue, maxValue);
-      };
+  const handleApply = () => {
+    onApply(minValue, maxValue);
+  };
   
   return (
     <div className={styles.rangeDropdown}>
@@ -181,7 +228,7 @@ const RangeDropdown = ({
           <div className={styles.inputWrapper}>
             <input
               type="text"
-              placeholder='От'
+              placeholder={minPlaceholder}
               value={minValue}
               onChange={handleMinChange}
             />
@@ -191,7 +238,7 @@ const RangeDropdown = ({
           <div className={styles.inputWrapper}>
             <input
               type="text"
-              placeholder='До'
+              placeholder={maxPlaceholder}
               value={maxValue}
               onChange={handleMaxChange}
             />
@@ -204,16 +251,16 @@ const RangeDropdown = ({
         <button className={styles.resetButton} onClick={onReset}>
           Сбросить
         </button>
-              <button
-                  className={`${styles.applyButton} ${isDisabled ? styles.isDisabledButton : ''}`}
-                  onClick={handleApply}
-              >
+        <button
+          className={`${styles.applyButton} ${isDisabled ? styles.isDisabledButton : ''}`}
+          onClick={handleApply}
+        >
           Применить
         </button>
       </div>
     </div>
   );
-};
+};  
 
 export {
   Dropdown,

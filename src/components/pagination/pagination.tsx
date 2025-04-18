@@ -9,20 +9,15 @@ type PaginationProps = {
 }
 
 function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps): JSX.Element {
-  // Генерация массива номеров страниц для пагинации в формате "< 1 2 3 4 ... 10 >"
   const getPageNumbers = (): (number | string)[] => {
     const pages: (number | string)[] = [];
-    const maxVisiblePages = 4; // Максимальное количество видимых страниц (исключая первую и последнюю)
+    const maxVisiblePages = 4; 
     
-    // Всегда показываем первую страницу
     pages.push(1);
     
     if (currentPage > maxVisiblePages - 1) {
-      // Если текущая страница достаточно далеко от начала, добавляем троеточие
       pages.push('...');
       
-      // Определяем начальную страницу для отображения
-      // При currentPage = 4, показываем 4, 5, 6, 7
       const startPage = currentPage;
       const endPage = Math.min(currentPage + maxVisiblePages - 1, totalPages - 1);
       
@@ -30,18 +25,15 @@ function Pagination({ currentPage, totalPages, onPageChange }: PaginationProps):
         pages.push(i);
       }
     } else {
-      // Если текущая страница близко к началу, показываем страницы 2, 3, 4, ..
       for (let i = 2; i <= Math.min(maxVisiblePages + 1, totalPages - 1); i++) {
         pages.push(i);
       }
     }
     
-    // Если последняя отображаемая страница не последняя в списке, добавляем троеточие
     if (pages[pages.length - 1] !== totalPages - 1 && totalPages > maxVisiblePages + 2) {
       pages.push('...');
     }
     
-    // Добавляем последнюю страницу, если всего страниц больше 1
     if (totalPages > 1) {
       pages.push(totalPages);
     }

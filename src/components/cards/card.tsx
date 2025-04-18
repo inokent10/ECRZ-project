@@ -23,7 +23,7 @@ function Card({ card }: CardProperty): JSX.Element {
         maximumFractionDigits: 0,
         minimumFractionDigits: 0
       }).format(card.pricePerMeterUsd);
-
+      
     return (
         <div className={styles.card}>
             <ImageCard name={card.name} media={card.media} type={card.type} />

@@ -3,10 +3,22 @@ import Breadcrumbs from "../breadcrumbs/breadcrumbs";
 import Filter from "../filter/filter";
 import SortMenu from "../sort-menu/sort-menu";
 
-import { SORT_OPTIONS } from "../../const";
+import { PropertyTypeEnum, SORT_OPTIONS } from "../../const";
 import styles from './header.module.scss'
+import { ApartmentFilters } from "@/store/slice/apartment-slice/apartment-slice";
+import { HouseFilters } from "@/store/slice/houses-slice/houses-slice";
 
-function Header(): JSX.Element {
+type HeaderProps = {
+    activePropertyType: PropertyTypeEnum;
+    onPropertyTypeChange: (type: PropertyTypeEnum) => void;
+    filters: ApartmentFilters | HouseFilters | null;
+  };
+
+function Header({ 
+    activePropertyType, 
+    onPropertyTypeChange,
+    filters
+  }: HeaderProps): JSX.Element {
     const [currentSort, setCurrentSort] = useState('relevance')
     const [isOpen, setIsOpen] = useState(false);
 
@@ -27,7 +39,8 @@ function Header(): JSX.Element {
 
     return (
         <>
-        <Breadcrumbs />
+            <Breadcrumbs activeType={activePropertyType} />
+            
             <div className={styles.headerWrapper}>
                 <div className={styles.titleWrapper}>
                     <h1 className={styles.title}>Купить 1-комнатную квартиру</h1>
@@ -44,7 +57,11 @@ function Header(): JSX.Element {
                 </div>
             </div>
 
-            <Filter />
+            <Filter
+                propertyType={activePropertyType}
+                onPropertyTypeChange={onPropertyTypeChange}
+                availableFilters={filters}
+            />
         </>
     )
 };

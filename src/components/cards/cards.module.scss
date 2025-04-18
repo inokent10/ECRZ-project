@@ -25,6 +25,12 @@
     &:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+
+        .imageNav,
+        .imageDots {
+          opacity: 1;
+          visibility: visible;
+      }
     }
   }
   
@@ -37,14 +43,6 @@
     img {
       width: 100%;
       height: 100%;
-    }
-
-    &:hover {
-      .imageNav,
-      .imageDots {
-        opacity: 1;
-        visibility: visible;
-      }
     }
   }
   
@@ -121,7 +119,7 @@
     pointer-events: none;
   }
 
-  .imageContainer:hover {
+  .card:hover {
     .imageNav,
     .imageDots {
       pointer-events: auto;

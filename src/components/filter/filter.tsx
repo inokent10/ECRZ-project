@@ -4,20 +4,45 @@ import { getDynamicLabel } from "./utils";
 import { PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS, DYNAMIC_FIELD_OPTIONS } from "../../const";
 import { Dropdown, RoomsDropdown, CheckboxDropdown, RangeDropdown } from "./dropdowns";
 import AddFiltersIcon from "./add-filters-icon";
+import { FilterOption, RangeValue } from "@/types/filter-types/filter-types";
+import { ApartmentFilters } from "@/store/slice/apartment-slice/apartment-slice";
+import { HouseFilters } from "@/store/slice/houses-slice/houses-slice";
 
-function Filter(): JSX.Element {
-  const [selectedType, setSelectedType] = useState<PropertyTypeEnum>(PropertyTypeEnum.Apartments);
+type FilterProps = {
+  propertyType: PropertyTypeEnum;
+  availableFilters: ApartmentFilters | HouseFilters | null;
+  onPropertyTypeChange: (type: PropertyTypeEnum) => void
+};
+
+function Filter({ propertyType, availableFilters, onPropertyTypeChange }: FilterProps): JSX.Element {
   const [selectedDynamic, setSelectedDynamic] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState({ min: "", max: "" });
-  const [areaRange, setAreaRange] = useState({ min: "", max: "" });
+  const [priceRange, setPriceRange] = useState<RangeValue>({ min: "", max: "" });
+  const [areaRange, setAreaRange] = useState<RangeValue>({ min: "", max: "" });
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-
+  const [availableOptions, setAvailableOptions] = useState<string[]>([]);
+  
   const toggleDropdown = (name: string) => {
     setOpenDropdown(prev => prev === name ? null : name);
   };
 
   const isOpen = (name: string) => openDropdown === name;
   const closeDropdowns = () => setOpenDropdown(null);
+
+  useEffect(() => {
+    if (!availableFilters) return;
+    
+    let serverOptions: string[] = [];
+    
+    if (propertyType === PropertyTypeEnum.Apartments) {
+      const apartmentFilters = availableFilters as ApartmentFilters;
+      serverOptions = apartmentFilters.availableRooms || [];
+    } else if (propertyType === PropertyTypeEnum.Houses) {
+      const houseFilters = availableFilters as HouseFilters;
+      serverOptions = houseFilters.availableTypes || [];
+    }
+    
+    setAvailableOptions(serverOptions);
+  }, [availableFilters, propertyType]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -37,7 +62,6 @@ function Filter(): JSX.Element {
     };
   }, [openDropdown]);
 
-
   const handleTypeSelect = (displayValue: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const enumValue = Object.entries(TYPE_DISPLAY_NAMES).find(
@@ -45,8 +69,7 @@ function Filter(): JSX.Element {
     )?.[0] as PropertyTypeEnum;
     
     if (enumValue) {
-      setSelectedType(enumValue);
-      setSelectedDynamic([]);
+      onPropertyTypeChange(enumValue);
       closeDropdowns();
     }
   };
@@ -88,21 +111,23 @@ function Filter(): JSX.Element {
         </ul>
       );
     } else if (openDropdown === 'dynamic') {
-      if (selectedType === PropertyTypeEnum.Apartments) {
+      if (propertyType === PropertyTypeEnum.Apartments) {
         return (
           <RoomsDropdown 
             selectedValue={selectedDynamic}
             onReset={handleReset}
             onApply={handleDynamicApply}
+            availableOptions={availableOptions}
           />
         );
       } else {
         return (
           <CheckboxDropdown 
-            options={DYNAMIC_FIELD_OPTIONS[selectedType] || []}
+            options={DYNAMIC_FIELD_OPTIONS[propertyType] || []}
             selectedValue={selectedDynamic}
             onReset={handleReset}
             onApply={handleDynamicApply}
+            availableOptions={availableOptions}
           />
         );
       }
@@ -128,7 +153,7 @@ function Filter(): JSX.Element {
           title="Площадь"
           minPlaceholder="20"
           maxPlaceholder="40"
-          currency={selectedType === PropertyTypeEnum.Apartments ? "м²" : "сот."}
+          currency={propertyType === PropertyTypeEnum.Apartments ? "м²" : "сот."}
           valueMin={areaRange.min}
           valueMax={areaRange.max}
           onReset={() => setAreaRange({ min: "", max: "" })}
@@ -143,20 +168,20 @@ function Filter(): JSX.Element {
     return null;
   };
   
-  const filterOptions = [
+  const filterOptions: FilterOption[] = [
     {
       id: 'type',
       label: 'Тип',
-      value: TYPE_DISPLAY_NAMES[selectedType],
-      placeholder: 'Тип',
+      value: TYPE_DISPLAY_NAMES[propertyType],
+      options: TYPE_OPTIONS,
       inactive: false,
       onSelect: handleTypeSelect
     },
     {
       id: 'dynamic',
-      label: getDynamicLabel(selectedType),
+      label: getDynamicLabel(propertyType),
       value: selectedDynamic.length > 0 ? selectedDynamic.join(', ') : null,
-      placeholder: getDynamicLabel(selectedType),
+      options: DYNAMIC_FIELD_OPTIONS[propertyType] || [],
       inactive: !selectedDynamic,
       onSelect: handleDynamicSelect
     },
@@ -164,15 +189,17 @@ function Filter(): JSX.Element {
       id: 'price',
       label: 'Стоимость',
       value: priceRange.min || priceRange.max ? `${priceRange.min} - ${priceRange.max} тыс.` : null,
-      placeholder: 'Стоимость',
+      options: [],
       inactive: !priceRange.min && !priceRange.max,
       onSelect: () => {}
     },
     {
       id: 'area',
       label: 'Площадь',
-      value: areaRange.min || areaRange.max ? `${areaRange.min} - ${areaRange.max} ${selectedType === PropertyTypeEnum.Apartments ? "м²" : "сот."}` : null,
-      placeholder: 'Площадь',
+      value: areaRange.min || areaRange.max ?
+        `${areaRange.min} - ${areaRange.max} ${propertyType === PropertyTypeEnum.Apartments ?
+          "м²" : "сот."}` : null,
+      options: [],
       inactive: !areaRange.min && !areaRange.max,
       onSelect: () => {}
     }
@@ -186,9 +213,9 @@ function Filter(): JSX.Element {
             <Dropdown
               label={option.label}
               value={option.value}
-              options={[]}
+              options={option.options}
               isOpen={isOpen(option.id)}
-              placeholder={option.placeholder}
+              placeholder={option.label}
               inactive={option.inactive}
               onToggle={() => toggleDropdown(option.id)}
             />
@@ -205,8 +232,7 @@ function Filter(): JSX.Element {
             <AddFiltersIcon />
             <span>Доп.Фильтры</span>
           </button>
-          <button
-            className={`${styles.filterShowButton} ${styles.isDisabledButton}`}>
+          <button className={`${styles.filterShowButton} ${styles.isDisabledButton}`}>
             Показать
           </button>
         </div>
