@@ -14,7 +14,7 @@ enum ApiRoute {
   Houses = 'HOUSES',
   Lands = 'LANDS',
   Commercial = 'COMMERCIAL',
-  LegalRequests = 'LEGAL_REQUESTS'
+  LegalRequests = 'LEGAL_REQUESTS',
 }
 
 const PageNames = {
@@ -38,21 +38,21 @@ const SORT_OPTIONS = [
 ]
 
 const TYPE_DISPLAY_NAMES: Record<PropertyTypeEnum, string> = {
-    [PropertyTypeEnum.Apartments]: 'Квартира',
-    [PropertyTypeEnum.Houses]: 'Дома',
-    [PropertyTypeEnum.Lands]: 'Участки',
-    [PropertyTypeEnum.Commercial]: 'Коммерческая',
-    [PropertyTypeEnum.LegalRequests]: 'Юр. запросы'
-  };
+  [PropertyTypeEnum.Apartments]: 'Квартира',
+  [PropertyTypeEnum.Houses]: 'Дома',
+  [PropertyTypeEnum.Lands]: 'Участки',
+  [PropertyTypeEnum.Commercial]: 'Коммерческая',
+  [PropertyTypeEnum.LegalRequests]: 'Юр. запросы',
+};
 
    const TYPE_OPTIONS = Object.values(TYPE_DISPLAY_NAMES);
   
    const DYNAMIC_FIELD_OPTIONS: Record<PropertyTypeEnum, string[]> = {
-    [PropertyTypeEnum.Apartments]: ['1-к. квартиры', '2-к. квартиры', '3-к. квартиры', '4-к. квартиры', 'Комнаты в квартирах'],
-    [PropertyTypeEnum.Houses]: ['Дом', 'Таунхаус', 'Часть дома', 'Дача'],
-    [PropertyTypeEnum.Lands]: ['Участки до 10 сот.', 'Участки до 20 сот.', 'Участки ИЖС', 'Участки Промназначения', 'Все объекты'],
-    [PropertyTypeEnum.Commercial]: ['Офис', 'Склады', 'Свободное назначение', 'Все объекты'],
-    [PropertyTypeEnum.LegalRequests]: ['Продажа недвижимости', 'Помощь в оформлении кредита', 'Оформление технической документации', 'Вывод в нежилой фонд'],
+     [PropertyTypeEnum.Apartments]: ['1-к. квартиры', '2-к. квартиры', '3-к. квартиры', '4-к. квартиры', 'Комнаты в квартирах'],
+     [PropertyTypeEnum.Houses]: ['Дом', 'Таунхаус', 'Часть дома', 'Дача'],
+     [PropertyTypeEnum.Lands]: ['Участки до 10 сот.', 'Участки до 20 сот.', 'Участки ИЖС', 'Участки Промназначения', 'Все объекты'],
+     [PropertyTypeEnum.Commercial]: ['Офис', 'Склады', 'Свободное назначение', 'Все объекты'],
+     [PropertyTypeEnum.LegalRequests]: ['Продажа недвижимости', 'Помощь в оформлении кредита', 'Оформление технической документации', 'Вывод в нежилой фонд'],
    };
 
 const REG_ONLY_NUMBERS = /[^0-9]/g;
@@ -81,4 +81,5 @@ export {
     TYPE_DISPLAY_NAMES,
     REG_ONLY_NUMBERS,
     DEFAULT_IMAGES,
+    SortOptionValue
 }

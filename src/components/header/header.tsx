@@ -5,21 +5,27 @@ import SortMenu from "../sort-menu/sort-menu";
 
 import { PropertyTypeEnum, SORT_OPTIONS } from "../../const";
 import styles from './header.module.scss'
-import { ApartmentFilters } from "@/store/slice/apartment-slice/apartment-slice";
-import { HouseFilters } from "@/store/slice/houses-slice/houses-slice";
+import { ApartymentFiltersProps, FilterParams, HousesFiltersProps } from "@/types/filter-types/filter-types";
 
 type HeaderProps = {
     activePropertyType: PropertyTypeEnum;
+    filters: ApartymentFiltersProps | HousesFiltersProps | null;
+    sortOptions: typeof SORT_OPTIONS;
+    currentSort: string;
+    onSortChange: (value: string) => void;
     onPropertyTypeChange: (type: PropertyTypeEnum) => void;
-    filters: ApartmentFilters | HouseFilters | null;
+    onFilterApply: (filter: FilterParams) => void;
   };
 
 function Header({ 
     activePropertyType, 
     onPropertyTypeChange,
-    filters
+    filters,
+    onFilterApply,
+    sortOptions,
+    currentSort,
+    onSortChange
   }: HeaderProps): JSX.Element {
-    const [currentSort, setCurrentSort] = useState('relevance')
     const [isOpen, setIsOpen] = useState(false);
 
     const sortMenuRef = useRef<HTMLDivElement>(null);
@@ -48,9 +54,9 @@ function Header({
                 </div>
                 <div ref={sortMenuRef}>
                 <SortMenu
-                    options={SORT_OPTIONS}
+                    options={sortOptions}
                     currentOption={currentSort}
-                    onSortChange={setCurrentSort}
+                    onSortChange={onSortChange}
                     onOpen={setIsOpen}
                     isOpen={isOpen}
                 />
@@ -61,6 +67,7 @@ function Header({
                 propertyType={activePropertyType}
                 onPropertyTypeChange={onPropertyTypeChange}
                 availableFilters={filters}
+                onFilterApply={onFilterApply}
             />
         </>
     )

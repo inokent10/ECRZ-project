@@ -10,13 +10,13 @@ type SortOption = {
 type SortMenuProps = {
     options: SortOption[];
     currentOption: string;
-    onSortChange: (value: string) => void;
     isOpen: boolean;
+    onSortChange: (value: string) => void;
     onOpen: (isOpen: boolean) => void;
 }
 
 function SortMenu({ options, currentOption, onSortChange, onOpen, isOpen }: SortMenuProps): JSX.Element {
-    const currentOptionName = options.find(opt => opt.value === currentOption)?.name || 'Сортировка';
+    const currentOptionName = options?.find(opt => opt.value === currentOption)?.name || 'Сортировка';
     
     return (
         <div className={styles.sortContainer}>
@@ -34,7 +34,7 @@ function SortMenu({ options, currentOption, onSortChange, onOpen, isOpen }: Sort
                 (
                 <ul className={styles.sortList} role="listbox">
                     {
-                        options.map((option) => (
+                        options?.map((option) => (
                             <li
                                 key={option.value}
                                 className={`${styles.sortItem} ${currentOption === option.value ? styles.active : ''}`}

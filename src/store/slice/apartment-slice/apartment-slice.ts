@@ -1,13 +1,14 @@
 import { ApiRoute } from "@/const";
 import { ApartmentEntity, ApiResponse } from "@/types/cards-types/cards-types";
-import { FiltersApiProps } from "@/types/filter-types/filter-types";
+import { ApartymentFiltersProps } from "@/types/filter-types/filter-types";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { AxiosError, AxiosInstance } from "axios";
 
   export type ApartmentsState = {
     apartments: ApiResponse<ApartmentEntity>;
-    filters: FiltersApiProps | null;
+    filters: ApartymentFiltersProps | null;
     isLoading: boolean;
+    isFiltersLoading: boolean;
     error: string | null;
     filtersError: string | null;
   }
@@ -22,6 +23,7 @@ import { AxiosError, AxiosInstance } from "axios";
     },
     filters: null,
     isLoading: false,
+    isFiltersLoading: false,
     error: null,
     filtersError: null,
   }
@@ -49,14 +51,14 @@ export const fetchApartmentsAction = createAsyncThunk<
 )
 
 export const fetchApartmentFiltersAction = createAsyncThunk<
-FiltersApiProps,
+ApartymentFiltersProps,
   void,
   { extra: AxiosInstance; rejectValue: string }
 >(
   'apartments/fetchApartmentFilters',
   async (_, { extra: api, rejectWithValue }) => {
     try {
-      const { data } = await api.get<FiltersApiProps>(ApiRoute.ApartmentsFilters);
+      const { data } = await api.get<ApartymentFiltersProps>(ApiRoute.ApartmentsFilters);
       
       return data;
     } catch (error) {
@@ -89,16 +91,16 @@ const apartmentsSlice = createSlice({
             })
         
             .addCase(fetchApartmentFiltersAction.pending, (state) => {
-                state.isLoading = true;
+                state.isFiltersLoading = true;
                 state.filtersError = null;
               })
               .addCase(fetchApartmentFiltersAction.fulfilled, (state, action) => {
                 state.filters = action.payload;
-                state.isLoading = false;
+                state.isFiltersLoading = false;
                 state.filtersError = null;
               })
               .addCase(fetchApartmentFiltersAction.rejected, (state, action) => {
-                state.isLoading = false;
+                state.isFiltersLoading = false;
                 state.filtersError = action.payload || "Ошибка при загрузке фильтров для квартир";
               })
     }

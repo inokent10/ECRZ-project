@@ -2,12 +2,13 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import { ApiResponse, HouseEntity } from "@/types/cards-types/cards-types"
 import { ApiRoute } from "@/const"
 import { AxiosInstance, AxiosError } from "axios"
-import { FiltersApiProps } from "@/types/filter-types/filter-types"
+import { HousesFiltersProps } from "@/types/filter-types/filter-types"
   
   export type HousesState = {
     houses: ApiResponse<HouseEntity>,
-    filters: FiltersApiProps | null,
+    filters: HousesFiltersProps | null,
     isLoading: boolean,
+    isFiltersLoading: boolean,
     error: string | null,
     filtersError: string | null,
   }
@@ -22,6 +23,7 @@ import { FiltersApiProps } from "@/types/filter-types/filter-types"
     },
     filters: null,
     isLoading: false,
+    isFiltersLoading: false,
     error: null,
     filtersError: null,
   }
@@ -49,14 +51,14 @@ export const fetchHousesAction = createAsyncThunk<
 )
 
 export const fetchHouseFiltersAction = createAsyncThunk<
-FiltersApiProps,
+HousesFiltersProps,
   void,
   { extra: AxiosInstance; rejectValue: string }
 >(
   'houses/fetchHouseFilters',
   async (_, { extra: api, rejectWithValue }) => {
     try {
-      const { data } = await api.get<FiltersApiProps>(ApiRoute.HousesFilters);
+      const { data } = await api.get<HousesFiltersProps>(ApiRoute.HousesFilters);
       
       return data;
     } catch (error) {
@@ -90,16 +92,16 @@ const housesSlice = createSlice({
         
 
             .addCase(fetchHouseFiltersAction.pending, (state) => {
-                state.isLoading = true;
+                state.isFiltersLoading = true;
                 state.filtersError = null;
               })
               .addCase(fetchHouseFiltersAction.fulfilled, (state, action) => {
                 state.filters = action.payload;
-                state.isLoading = false;
+                state.isFiltersLoading = false;
                 state.filtersError = null;
               })
               .addCase(fetchHouseFiltersAction.rejected, (state, action) => {
-                state.isLoading = false;
+                state.isFiltersLoading = false;
                 state.filtersError = action.payload || "Ошибка при загрузке фильтров для домов";
               })
     }

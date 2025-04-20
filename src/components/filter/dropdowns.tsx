@@ -36,7 +36,20 @@ const Dropdown = ({
 
 const RoomsDropdown = ({ selectedValue, onReset, onApply, availableOptions }: RoomsDropdownProps) => {
   const [localSelected, setLocalSelected] = useState([...selectedValue]);
-  const roomOptions = ["Студия", "1", "2", "3", "4+"];
+  const normalizeOptions = (options: string[]) => {
+    const normalized = options.map(option => {
+      if (option === 'Студия') return 'Студия';
+      const match = option.match(/(\d+)(\+?)-к\. квартира/);
+      return match ? `${match[1]}${match[2] || ''}` : option;
+    });
+    
+    return [...new Set(normalized)];
+  };
+  const defaultRoomOptions = ['Студия', '1', '2', '3', '4+'];
+
+  const roomOptions = availableOptions && availableOptions.length > 0 
+  ? normalizeOptions(availableOptions) 
+    : defaultRoomOptions
 
   useEffect(() => {
     setLocalSelected(selectedValue);
@@ -55,27 +68,13 @@ const RoomsDropdown = ({ selectedValue, onReset, onApply, availableOptions }: Ro
   };
 
   const isOptionAvailable = (option: string): boolean => {
-    if (!availableOptions || availableOptions.length === 0) return true;
-    
-    const mappedOption = mapRoomDisplayToServerValue(option);
-    return availableOptions.includes(mappedOption);
-  };
-
-  const mapRoomDisplayToServerValue = (display: string): string => {
-    const mapping: Record<string, string> = {
-      "Студия": "STUDIO",
-      "1": "ONE_ROOM",
-      "2": "TWO_ROOM",
-      "3": "THREE_ROOM",
-      "4+": "FOUR_PLUS_ROOM"
-    };
-    return mapping[display] || display;
+    return roomOptions.includes(option);
   };
   
   return (
     <div className={styles.roomsDropdown}>
       <div className={styles.roomOptionsContainer}>
-        {roomOptions.map((room) => (
+        {defaultRoomOptions.map((room) => (
           <div 
             key={room}
             className={`
@@ -128,18 +127,7 @@ const CheckboxDropdown = ({ options, selectedValue, onReset, onApply, availableO
   const isOptionAvailable = (option: string): boolean => {
     if (!availableOptions || availableOptions.length === 0) return true;
     
-    const mappedOption = mapBuildingTypeDisplayToServerValue(option);
-    return availableOptions.includes(mappedOption);
-  };
-
-  const mapBuildingTypeDisplayToServerValue = (display: string): string => {
-    const mapping: Record<string, string> = {
-      "Дом": "RESIDENTIAL",
-      "Дача": "GARDEN",
-      "Коттедж": "COTTAGE",
-      "Таунхаус": "TOWNHOUSE"
-    };
-    return mapping[display] || display;
+    return availableOptions.includes(option);
   };
       
   return (

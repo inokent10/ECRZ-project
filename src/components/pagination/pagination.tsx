@@ -1,4 +1,3 @@
-// pagination.tsx - компонент пагинации с логикой "< 1 2 3 4 ... 10 >"
 import { JSX } from "react";
 import styles from './pagination.module.scss';
 

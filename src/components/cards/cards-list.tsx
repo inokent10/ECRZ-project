@@ -6,27 +6,22 @@ import Pagination from "../pagination/pagination";
 
 type CardsListProps = {
   cards: ApiResponse<CardsEntity>;
-  onPageChange?: (page: number) => void; 
+  currentPage: number;
+  onPageChange: (page: number) => void; 
 }
 
-function CardsList({ cards, onPageChange }: CardsListProps): JSX.Element {
+function CardsList({ cards, onPageChange, currentPage }: CardsListProps): JSX.Element {
   const [currentItems, setCurrentItems] = useState<CardsEntity[]>(cards.entities || []);
-  const [currentPage, setCurrentPage] = useState(cards.currentPage || 1);
-  const [totalPages, setTotalPages] = useState(cards.totalPages || 1);
-
+  
   useEffect(() => {
-    setCurrentItems(cards.entities || []);
-    setCurrentPage(cards.currentPage || 1);
-    setTotalPages(cards.totalPages || 1);
-  }, [cards]);
+    setCurrentItems(cards?.entities || []);
+  }, [cards, onPageChange]);
 
   const handlePageChange = (pageNumber: number) => {
-    if (pageNumber < 1 || pageNumber > totalPages) return;
+    if (pageNumber < 1 || pageNumber > cards.totalPages) return;
     
     if (onPageChange) {
       onPageChange(pageNumber);
-    } else {
-      setCurrentPage(pageNumber);
     }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -40,10 +35,10 @@ function CardsList({ cards, onPageChange }: CardsListProps): JSX.Element {
         ))}
       </div>
       
-      {totalPages > 1 && (
+      {cards.totalPages > 1 && (
         <Pagination 
           currentPage={currentPage} 
-          totalPages={totalPages} 
+          totalPages={cards.totalPages}
           onPageChange={handlePageChange} 
         />
       )}

@@ -46,7 +46,7 @@ function Card({ card }: CardProperty): JSX.Element {
             </>
           ) : (
             <>
-              Дача, {card.totalArea}м<sup>2</sup>
+              {card.houseType}, {card.totalArea}м<sup>2</sup>
             </>
           )}
         </h2>

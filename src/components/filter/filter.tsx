@@ -1,26 +1,33 @@
-import React, { JSX, useEffect, useState } from "react";
+import React, { JSX, useEffect, useState, useCallback } from "react";
 import styles from './filter.module.scss';
-import { getDynamicLabel } from "./utils";
-import { PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS, DYNAMIC_FIELD_OPTIONS } from "../../const";
+import { getDynamicLabel, isApartmentFilters, isHouseFilters } from "./utils";
+import { PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS } from "../../const";
 import { Dropdown, RoomsDropdown, CheckboxDropdown, RangeDropdown } from "./dropdowns";
 import AddFiltersIcon from "./add-filters-icon";
-import { FilterOption, RangeValue } from "@/types/filter-types/filter-types";
-import { ApartmentFilters } from "@/store/slice/apartment-slice/apartment-slice";
-import { HouseFilters } from "@/store/slice/houses-slice/houses-slice";
+import {
+  ApartymentFiltersProps,
+  FilterOption,
+  HousesFiltersProps,
+  RangeValue,
+  FilterParams,
+  FilterChoices
+} from "@/types/filter-types/filter-types";
 
 type FilterProps = {
   propertyType: PropertyTypeEnum;
-  availableFilters: ApartmentFilters | HouseFilters | null;
-  onPropertyTypeChange: (type: PropertyTypeEnum) => void
+  availableFilters: ApartymentFiltersProps | HousesFiltersProps | null;
+  onPropertyTypeChange: (type: PropertyTypeEnum) => void;
+  onFilterApply: (filters: FilterParams) => void;
 };
 
-function Filter({ propertyType, availableFilters, onPropertyTypeChange }: FilterProps): JSX.Element {
+function Filter({ propertyType, availableFilters, onPropertyTypeChange, onFilterApply }: FilterProps): JSX.Element {
   const [selectedDynamic, setSelectedDynamic] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<RangeValue>({ min: "", max: "" });
   const [areaRange, setAreaRange] = useState<RangeValue>({ min: "", max: "" });
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [availableOptions, setAvailableOptions] = useState<string[]>([]);
-  
+  const [filterChanged, setFilterChanged] = useState<boolean>(false);
+    
   const toggleDropdown = (name: string) => {
     setOpenDropdown(prev => prev === name ? null : name);
   };
@@ -29,20 +36,31 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange }: Filter
   const closeDropdowns = () => setOpenDropdown(null);
 
   useEffect(() => {
-    if (!availableFilters) return;
-    
-    let serverOptions: string[] = [];
-    
-    if (propertyType === PropertyTypeEnum.Apartments) {
-      const apartmentFilters = availableFilters as ApartmentFilters;
-      serverOptions = apartmentFilters.availableRooms || [];
-    } else if (propertyType === PropertyTypeEnum.Houses) {
-      const houseFilters = availableFilters as HouseFilters;
-      serverOptions = houseFilters.availableTypes || [];
+    if (!availableFilters || !Array.isArray(availableFilters)) {
+      setAvailableOptions([]);
+      return;
     }
     
-    setAvailableOptions(serverOptions);
+    const choicesFilter = availableFilters.find(filter => 
+      filter.type === 'choices' && 
+      ((propertyType === PropertyTypeEnum.Apartments && filter.key === 'roomType') || 
+       (propertyType === PropertyTypeEnum.Houses && filter.key === 'houseType'))
+    ) as FilterChoices | undefined;
+
+    if (choicesFilter && choicesFilter.choices) {
+      const options = choicesFilter.choices.map(choice => choice.name);
+      setAvailableOptions(options);
+    } else {
+      setAvailableOptions([]);
+    }
   }, [availableFilters, propertyType]);
+
+  useEffect(() => {
+    setSelectedDynamic([]);
+    setPriceRange({ min: "", max: "" });
+    setAreaRange({ min: "", max: "" });
+    setFilterChanged(false);
+  }, [propertyType]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -81,7 +99,7 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange }: Filter
         ? prev.filter(item => item !== value) 
         : [...prev, value]
     );
-    closeDropdowns();
+    setFilterChanged(true);
   };
 
   const handleReset = () => {
@@ -92,11 +110,87 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange }: Filter
     } else if (openDropdown === 'area') {
       setAreaRange({ min: "", max: "" });
     }
+    setFilterChanged(true);
   };
 
   const handleDynamicApply = (values: string[]) => {
     setSelectedDynamic(values);
     closeDropdowns();
+    setFilterChanged(true);
+  };
+
+  const handlePriceApply = (min: string, max: string) => {
+    setPriceRange({ min, max });
+    closeDropdowns();
+    setFilterChanged(true);
+  };
+
+  const handleAreaApply = (min: string, max: string) => {
+    setAreaRange({ min, max });
+    closeDropdowns();
+    setFilterChanged(true);
+  };
+
+  const findServerValueByDisplayName = (displayName: string, propertyType: PropertyTypeEnum): string | undefined => {
+    if (!availableFilters || !Array.isArray(availableFilters)) return undefined;
+    
+    const key = propertyType === PropertyTypeEnum.Apartments ? 'roomType' : 'houseType';
+    const choicesFilter = availableFilters.find(filter => 
+      filter.type === 'choices' && filter.key === key
+    ) as FilterChoices;
+    
+    if (!choicesFilter) return undefined;
+    
+    const choice = choicesFilter.choices.find(c => c.name === displayName.toString());
+
+    return choice?.key;
+  };
+
+  const prepareFilterParams = useCallback((): FilterParams => {
+    const params: FilterParams = {};
+    
+    if (selectedDynamic.length > 0) {
+      if (propertyType === PropertyTypeEnum.Apartments) {
+        params.roomType = selectedDynamic.map(room =>
+          findServerValueByDisplayName(room, PropertyTypeEnum.Apartments) || room
+        );
+      } else {
+        params.houseType = selectedDynamic.map(type =>
+          findServerValueByDisplayName(type, PropertyTypeEnum.Houses) || type
+        );
+      }
+    }
+    
+    if (priceRange.min) params.priceMin = priceRange.min;
+    if (priceRange.max) params.priceMax = priceRange.max;
+    
+    if (areaRange.min) params.totalAreaMin = areaRange.min;
+    if (areaRange.max) params.totalAreaMax = areaRange.max;
+    
+    return params;
+  }, [selectedDynamic, priceRange, areaRange, propertyType, availableFilters]);
+
+  const handleShowResults = () => {
+    const filterParams = prepareFilterParams();
+    onFilterApply(filterParams);
+    setFilterChanged(false);
+  };
+
+  const getDynamicOptions = (): string[] => {
+    if (!availableFilters || !Array.isArray(availableFilters)) return [];
+    
+    const key = propertyType === PropertyTypeEnum.Apartments ? 'roomType' : 'houseType';
+    const choicesFilter = availableFilters.find(filter => 
+      filter.type === 'choices' && filter.key === key
+    ) as FilterChoices | undefined;
+
+    if (!choicesFilter || !choicesFilter.choices) {
+      return propertyType === PropertyTypeEnum.Apartments 
+        ? ["Студия", "1", "2", "3", "4+"] 
+        : ["Дом", "Дача", "Коттедж", "Таунхаус"];
+    }
+    
+    return choicesFilter.choices.map(choice => choice.name);
   };
 
   const renderDropdownContent = () => {
@@ -123,7 +217,7 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange }: Filter
       } else {
         return (
           <CheckboxDropdown 
-            options={DYNAMIC_FIELD_OPTIONS[propertyType] || []}
+            options={getDynamicOptions()}
             selectedValue={selectedDynamic}
             onReset={handleReset}
             onApply={handleDynamicApply}
@@ -135,32 +229,26 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange }: Filter
       return (
         <RangeDropdown 
           title="Стоимость"
-          minPlaceholder="10"
-          maxPlaceholder="20"
+          minPlaceholder="От"
+          maxPlaceholder="До"
           currency="₽"
           valueMin={priceRange.min}
           valueMax={priceRange.max}
           onReset={() => setPriceRange({ min: "", max: "" })}
-          onApply={(min, max) => {
-            setPriceRange({ min, max });
-            closeDropdowns();
-          }}
+          onApply={handlePriceApply}
         />
       );
     } else if (openDropdown === 'area') {
       return (
         <RangeDropdown 
           title="Площадь"
-          minPlaceholder="20"
-          maxPlaceholder="40"
+          minPlaceholder="От"
+          maxPlaceholder="До"
           currency={propertyType === PropertyTypeEnum.Apartments ? "м²" : "сот."}
           valueMin={areaRange.min}
           valueMax={areaRange.max}
           onReset={() => setAreaRange({ min: "", max: "" })}
-          onApply={(min, max) => {
-            setAreaRange({ min, max });
-            closeDropdowns();
-          }}
+          onApply={handleAreaApply}
         /> 
       );
     }
@@ -181,14 +269,16 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange }: Filter
       id: 'dynamic',
       label: getDynamicLabel(propertyType),
       value: selectedDynamic.length > 0 ? selectedDynamic.join(', ') : null,
-      options: DYNAMIC_FIELD_OPTIONS[propertyType] || [],
-      inactive: !selectedDynamic,
+      options: propertyType === PropertyTypeEnum.Apartments 
+        ? ["Студия", "1", "2", "3", "4+"] 
+        : ["Дом", "Дача", "Коттедж", "Таунхаус"],
+      inactive: !selectedDynamic.length,
       onSelect: handleDynamicSelect
     },
     {
       id: 'price',
       label: 'Стоимость',
-      value: priceRange.min || priceRange.max ? `${priceRange.min} - ${priceRange.max} тыс.` : null,
+      value: priceRange.min || priceRange.max ? `${priceRange.min || '0'} - ${priceRange.max || '∞'} руб.` : null,
       options: [],
       inactive: !priceRange.min && !priceRange.max,
       onSelect: () => {}
@@ -197,13 +287,20 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange }: Filter
       id: 'area',
       label: 'Площадь',
       value: areaRange.min || areaRange.max ?
-        `${areaRange.min} - ${areaRange.max} ${propertyType === PropertyTypeEnum.Apartments ?
+        `${areaRange.min || '0'} - ${areaRange.max || '∞'} ${propertyType === PropertyTypeEnum.Apartments ?
           "м²" : "сот."}` : null,
       options: [],
       inactive: !areaRange.min && !areaRange.max,
       onSelect: () => {}
     }
   ];
+
+  const hasActiveFilters = 
+    selectedDynamic.length > 0 || 
+    priceRange.min || 
+    priceRange.max || 
+    areaRange.min || 
+    areaRange.max;
 
   return (
     <div className={styles.filterContainer}>
@@ -232,7 +329,11 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange }: Filter
             <AddFiltersIcon />
             <span>Доп.Фильтры</span>
           </button>
-          <button className={`${styles.filterShowButton} ${styles.isDisabledButton}`}>
+          <button 
+            className={`${styles.filterShowButton} ${(!hasActiveFilters || !filterChanged) ? styles.isDisabledButton : ''}`}
+            onClick={handleShowResults}
+            disabled={!hasActiveFilters || !filterChanged}
+          >
             Показать
           </button>
         </div>
