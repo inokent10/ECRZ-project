@@ -1,0 +1,77 @@
+.sortContainer {
+    position: relative;
+    width: 240px;
+  }
+  
+  .sortButton {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    width: 100%;
+    transition: border-color 0.2s;
+  
+    &:hover {
+      border-color: #999;
+    }
+  }
+  
+  .sortIcon {
+    width: 16px;
+    height: 16px;
+    fill: #666;
+  }
+  
+  .arrow {
+    margin-left: auto;
+    border: solid #666;
+    border-width: 0 1px 1px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(45deg);
+    
+    &Up {
+      transform: rotate(-135deg);
+      margin-top: -3px;
+    }
+    
+    &Down {
+      transform: rotate(45deg);
+    }
+  }
+  
+  .sortList {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 8px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 10;
+
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+  }
+  
+  .sortItem {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+    
+    &:hover {
+      background: #f5f5f5;
+    }
+    
+    &.active {
+      background: #e0f0ff;
+      color: #007bff;
+    }
+  }
