@@ -15,7 +15,7 @@ function ImageCard({ name, media, type }: ImageProps): JSX.Element {
     return Math.floor(Math.random() * imagesCount);
 });
     
-    const images = media.length > 0 
+    const images = media.length < 0 
     ? media.map((m, i) => ({
         url: m.url,
         fallback: DEFAULT_IMAGES[type][i % 3] 
