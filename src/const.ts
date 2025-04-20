@@ -45,6 +45,14 @@ const TYPE_DISPLAY_NAMES: Record<PropertyTypeEnum, string> = {
   [PropertyTypeEnum.LegalRequests]: 'Юр. запросы',
 };
 
+const TYPE_SHOW_NAMES: Record<PropertyTypeEnum, string> = {
+  [PropertyTypeEnum.Apartments]: 'Квартиру',
+  [PropertyTypeEnum.Houses]: 'Дом',
+  [PropertyTypeEnum.Lands]: 'Участки',
+  [PropertyTypeEnum.Commercial]: 'Коммерческую землю',
+  [PropertyTypeEnum.LegalRequests]: 'Юр. запросы',
+};
+
    const TYPE_OPTIONS = Object.values(TYPE_DISPLAY_NAMES);
   
    const DYNAMIC_FIELD_OPTIONS: Record<PropertyTypeEnum, string[]> = {
@@ -81,5 +89,6 @@ export {
     TYPE_DISPLAY_NAMES,
     REG_ONLY_NUMBERS,
     DEFAULT_IMAGES,
-    SortOptionValue
+    SortOptionValue,
+    TYPE_SHOW_NAMES
 }

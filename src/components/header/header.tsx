@@ -3,7 +3,7 @@ import Breadcrumbs from "../breadcrumbs/breadcrumbs";
 import Filter from "../filter/filter";
 import SortMenu from "../sort-menu/sort-menu";
 
-import { PropertyTypeEnum, SORT_OPTIONS } from "../../const";
+import { PropertyTypeEnum, SORT_OPTIONS, TYPE_SHOW_NAMES } from "../../const";
 import styles from './header.module.scss'
 import { ApartymentFiltersProps, FilterParams, HousesFiltersProps } from "@/types/filter-types/filter-types";
 
@@ -12,6 +12,7 @@ type HeaderProps = {
     filters: ApartymentFiltersProps | HousesFiltersProps | null;
     sortOptions: typeof SORT_OPTIONS;
     currentSort: string;
+    totalItems: number;
     onSortChange: (value: string) => void;
     onPropertyTypeChange: (type: PropertyTypeEnum) => void;
     onFilterApply: (filter: FilterParams) => void;
@@ -24,7 +25,8 @@ function Header({
     onFilterApply,
     sortOptions,
     currentSort,
-    onSortChange
+    onSortChange,
+    totalItems
   }: HeaderProps): JSX.Element {
     const [isOpen, setIsOpen] = useState(false);
 
@@ -42,6 +44,7 @@ function Header({
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen]);
+console.log(activePropertyType);
 
     return (
         <>
@@ -49,8 +52,10 @@ function Header({
             
             <div className={styles.headerWrapper}>
                 <div className={styles.titleWrapper}>
-                    <h1 className={styles.title}>Купить 1-комнатную квартиру</h1>
-                    <p className={styles.totalCount}>100 результатов</p>
+                    <h1 className={styles.title}>
+                        Купить {TYPE_SHOW_NAMES[activePropertyType]}
+                    </h1>
+                    <p className={styles.totalCount}>{totalItems} результатов</p>
                 </div>
                 <div ref={sortMenuRef}>
                 <SortMenu

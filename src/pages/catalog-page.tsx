@@ -161,6 +161,7 @@ function CatalogPage(): JSX.Element {
                 sortOptions={SORT_OPTIONS}
                 currentSort={currentSort}
                 onSortChange={handleSortChange}
+                totalItems={filteredAndSortedCards.totalItems}
             />
             
             {isLoading && <SpinnerLoader />}
