@@ -42,7 +42,6 @@ const normalizeRoomType = (roomType: string): string => {
   
 export {
   getDynamicLabel,
-  // normalizeFilters,
   isHouseFilters,
   isApartmentFilters,
   normalizeRoomType,

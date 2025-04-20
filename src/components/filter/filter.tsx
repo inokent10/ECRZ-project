@@ -1,6 +1,6 @@
 import React, { JSX, useEffect, useState, useCallback } from "react";
 import styles from './filter.module.scss';
-import { getDynamicLabel, isApartmentFilters, isHouseFilters } from "./utils";
+import { getDynamicLabel } from "./utils";
 import { PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS } from "../../const";
 import { Dropdown, RoomsDropdown, CheckboxDropdown, RangeDropdown } from "./dropdowns";
 import AddFiltersIcon from "./add-filters-icon";
@@ -10,7 +10,9 @@ import {
   HousesFiltersProps,
   RangeValue,
   FilterParams,
-  FilterChoices
+  FilterChoices,
+  ApartmentFilterParams,
+  HouseFilterParams
 } from "@/types/filter-types/filter-types";
 
 type FilterProps = {
@@ -147,27 +149,40 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange, onFilter
   };
 
   const prepareFilterParams = useCallback((): FilterParams => {
-    const params: FilterParams = {};
-    
-    if (selectedDynamic.length > 0) {
-      if (propertyType === PropertyTypeEnum.Apartments) {
+    if (propertyType === PropertyTypeEnum.Apartments) {
+      const params: ApartmentFilterParams = {};
+      
+      if (selectedDynamic.length > 0) {
         params.roomType = selectedDynamic.map(room =>
           findServerValueByDisplayName(room, PropertyTypeEnum.Apartments) || room
         );
-      } else {
+      }
+      
+      if (priceRange.min) params.priceMin = priceRange.min;
+      if (priceRange.max) params.priceMax = priceRange.max;
+      
+      if (areaRange.min) params.totalAreaMin = areaRange.min;
+      if (areaRange.max) params.totalAreaMax = areaRange.max;
+      
+      return params;
+    } else {
+      const params: HouseFilterParams = {};
+      
+      if (selectedDynamic.length > 0) {
         params.houseType = selectedDynamic.map(type =>
           findServerValueByDisplayName(type, PropertyTypeEnum.Houses) || type
         );
       }
+      
+      if (priceRange.min) params.priceMin = priceRange.min;
+      if (priceRange.max) params.priceMax = priceRange.max;
+      
+      if (areaRange.min) params.totalAreaMin = areaRange.min;
+      if (areaRange.max) params.totalAreaMax = areaRange.max;
+      
+      return params;
     }
-    
-    if (priceRange.min) params.priceMin = priceRange.min;
-    if (priceRange.max) params.priceMax = priceRange.max;
-    
-    if (areaRange.min) params.totalAreaMin = areaRange.min;
-    if (areaRange.max) params.totalAreaMax = areaRange.max;
-    
-    return params;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDynamic, priceRange, areaRange, propertyType, availableFilters]);
 
   const handleShowResults = () => {
