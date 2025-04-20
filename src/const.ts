@@ -67,9 +67,9 @@ const REG_ONLY_NUMBERS = /[^0-9]/g;
 
 const DEFAULT_IMAGES = {
   apartment: [
-    'public/image/huy-nguyen-AB-q9lwCVv8-unsplash.jpg',
-    'public/image/modern-kitchen-interior-design.jpg',
-    'public/image/skyscraper-8173578.jpg',
+    '../public/image/huy-nguyen-AB-q9lwCVv8-unsplash.jpg',
+    '../public/image/modern-kitchen-interior-design.jpg',
+    '../public/image/skyscraper-8173578.jpg',
   ],
   house: [
     'public/image/s-tsuchiya-f41xZ19S9dY-unsplash.jpg',
