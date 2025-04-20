@@ -72,9 +72,9 @@ const DEFAULT_IMAGES = {
     '../public/image/skyscraper-8173578.jpg',
   ],
   house: [
-    'public/image/s-tsuchiya-f41xZ19S9dY-unsplash.jpg',
-    'public/image/3d-room-interior-with-classic-design-furniture.jpg',
-    'public/image/tranquil-space-with-plants.jpg',
+    '../public/image/s-tsuchiya-f41xZ19S9dY-unsplash.jpg',
+    '../public/image/3d-room-interior-with-classic-design-furniture.jpg',
+    '../public/image/tranquil-space-with-plants.jpg',
   ]
 };
 
