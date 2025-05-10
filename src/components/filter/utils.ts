@@ -7,6 +7,8 @@ const getDynamicLabel = (type: PropertyTypeEnum): string => {
         return 'Кол-во комнат';
       case PropertyTypeEnum.Houses:
         return 'Тип строения';
+        case PropertyTypeEnum.Lands:
+          return 'Тип участка';
       case PropertyTypeEnum.Commercial:
         return 'Назначение';
       default:
