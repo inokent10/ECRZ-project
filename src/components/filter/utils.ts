@@ -25,14 +25,13 @@ const isHouseFilters = (filters: FilterParams): filters is HouseFilterParams => 
 };
 
 const normalizeHouseType = (houseType: string): string => {
+  
   const mapping: Record<string, string> = {
     "Жилой дом": "RESIDENTIAL",
     "Таунхаус": "TOWNHOUSE",
     "Часть дома": "PART_OF_A_HOUSE",
     "Садовый дом": "GARDEN"
   };
-  console.log('houseType in func==>', typeof houseType);
-  console.log('mapping[houseType] in func==>',mapping[houseType]);
   
   return mapping[houseType] || houseType;
 };

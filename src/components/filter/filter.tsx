@@ -1,7 +1,7 @@
 import React, { JSX, useEffect, useState, useCallback } from "react";
 import styles from './filter.module.scss';
 import { getDynamicLabel } from "./utils";
-import { PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS } from "../../const";
+import { DYNAMIC_FIELD_OPTIONS, PropertyTypeEnum, TYPE_DISPLAY_NAMES, TYPE_OPTIONS } from "../../const";
 import { Dropdown, RoomsDropdown, CheckboxDropdown, RangeDropdown } from "./dropdowns";
 import AddFiltersIcon from "./add-filters-icon";
 import {
@@ -29,6 +29,7 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange, onFilter
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [availableOptions, setAvailableOptions] = useState<string[]>([]);
   const [filterChanged, setFilterChanged] = useState<boolean>(false);
+  const [selectedPropertyType, setSelectedPropertyType] = useState<PropertyTypeEnum>(propertyType)
     
   const toggleDropdown = (name: string) => {
     setOpenDropdown(prev => prev === name ? null : name);
@@ -89,8 +90,9 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange, onFilter
     )?.[0] as PropertyTypeEnum;
     
     if (enumValue) {
-      onPropertyTypeChange(enumValue);
+      setSelectedPropertyType(enumValue);
       closeDropdowns();
+      setFilterChanged(true);
     }
   };
 
@@ -186,25 +188,33 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange, onFilter
   }, [selectedDynamic, priceRange, areaRange, propertyType, availableFilters]);
 
   const handleShowResults = () => {
+  if (selectedPropertyType !== propertyType) {
+    onPropertyTypeChange(selectedPropertyType);
+  } else {
     const filterParams = prepareFilterParams();
     onFilterApply(filterParams);
-    setFilterChanged(false);
+  }
+  setFilterChanged(false);
   };
 
   const getDynamicOptions = (): string[] => {
     if (!availableFilters || !Array.isArray(availableFilters)) return [];
+
+    const keyMap: Record<PropertyTypeEnum, string> = {
+      [PropertyTypeEnum.Apartments]: 'roomType',
+      [PropertyTypeEnum.Houses]: 'houseType',
+      [PropertyTypeEnum.Lands]: '',
+      [PropertyTypeEnum.Commercial]: '',
+    };
+  
+    const key = keyMap[propertyType];
     
-    const key = propertyType === PropertyTypeEnum.Apartments ? 'roomType' : 'houseType';
     const choicesFilter = availableFilters.find(filter => 
       filter.type === 'choices' && filter.key === key
     ) as FilterChoices | undefined;
 
-    if (!choicesFilter || !choicesFilter.choices) {
-      return propertyType === PropertyTypeEnum.Apartments 
-        ? ["Студия", "1", "2", "3", "4+"] 
-        : ["Дом", "Дача", "Коттедж", "Таунхаус"];
-    }
-    
+    if (!choicesFilter || !choicesFilter.choices) return [];
+
     return choicesFilter.choices.map(choice => choice.name);
   };
 
@@ -231,7 +241,7 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange, onFilter
         );
       } else {
         return (
-          <CheckboxDropdown 
+          <CheckboxDropdown
             options={getDynamicOptions()}
             selectedValue={selectedDynamic}
             onReset={handleReset}
@@ -275,18 +285,16 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange, onFilter
     {
       id: 'type',
       label: 'Тип',
-      value: TYPE_DISPLAY_NAMES[propertyType],
+      value: TYPE_DISPLAY_NAMES[selectedPropertyType],
       options: TYPE_OPTIONS,
       inactive: false,
       onSelect: handleTypeSelect
     },
     {
       id: 'dynamic',
-      label: getDynamicLabel(propertyType),
+      label: getDynamicLabel(selectedPropertyType),
       value: selectedDynamic.length > 0 ? selectedDynamic.join(', ') : null,
-      options: propertyType === PropertyTypeEnum.Apartments 
-        ? ["Студия", "1", "2", "3", "4+"] 
-        : ["Дом", "Дача", "Коттедж", "Таунхаус"],
+      options: DYNAMIC_FIELD_OPTIONS[selectedPropertyType],
       inactive: !selectedDynamic.length,
       onSelect: handleDynamicSelect
     },
@@ -311,6 +319,7 @@ function Filter({ propertyType, availableFilters, onPropertyTypeChange, onFilter
   ];
 
   const hasActiveFilters = 
+    selectedPropertyType !== propertyType ||
     selectedDynamic.length > 0 || 
     priceRange.min || 
     priceRange.max || 

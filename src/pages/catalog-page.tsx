@@ -26,32 +26,39 @@ function CatalogPage(): JSX.Element {
     const isMounted = useRef(true);
     
     const { 
-        apartments, 
-        filters: apartmentFilters, 
-        isLoading: isApartmentsLoading, 
+        apartments,
+        filters: apartmentFilters,
+        isLoading: isApartmentsLoading,
         isFiltersLoading: isApartmentFiltersLoading,
-        error: apartmentsError 
+        error: apartmentsError
       } = useAppSelector((state) => state.apartments);
       
-      const { 
-        houses, 
-        filters: houseFilters, 
-        isLoading: isHousesLoading, 
+      const {
+        houses,
+        filters: houseFilters,
+        isLoading: isHousesLoading,
         isFiltersLoading: isHouseFiltersLoading,
-        error: housesError 
+        error: housesError
       } = useAppSelector((state) => state.houses);
+    
+      const isValidPropertyType = activePropertyType === PropertyTypeEnum.Apartments || 
+      activePropertyType === PropertyTypeEnum.Houses;
 
-    const isLoading = activePropertyType === PropertyTypeEnum.Apartments 
-        ? isApartmentsLoading || isApartmentFiltersLoading 
+    const isLoading = activePropertyType === PropertyTypeEnum.Apartments
+        ? isApartmentsLoading || isApartmentFiltersLoading
         : isHousesLoading || isHouseFiltersLoading;
     
-    const error = activePropertyType === PropertyTypeEnum.Apartments 
-        ? apartmentsError 
+    const error = activePropertyType === PropertyTypeEnum.Apartments
+        ? apartmentsError
         : housesError;
 
     const filteredAndSortedCards = useMemo(() => {
+        if (!isValidPropertyType) {
+            return { entities: [], totalItems: 0 } as unknown as ApiResponse<ApartmentEntity | HouseEntity>;
+        }
+        
         const cards = activePropertyType === PropertyTypeEnum.Apartments ? apartments : houses;
-
+        
         const result = { ...cards } as ApiResponse<ApartmentEntity | HouseEntity>;
         let filtered = [...cards.entities];
 
@@ -88,10 +95,10 @@ function CatalogPage(): JSX.Element {
         result.entities = filtered;
 
         return sortProperties(result, currentSort);
-    }, [activePropertyType, apartments, houses, currentSort, activeFilters]);
+    }, [isValidPropertyType, activePropertyType, apartments, houses, activeFilters, currentSort]);
 
     const currentFilters = activePropertyType === PropertyTypeEnum.Apartments 
-        ? apartmentFilters : houseFilters;
+    ? apartmentFilters : houseFilters;
     
     const handleFilterApply = (filters: FilterParams) => {
         setActiveFilters(filters);
@@ -123,7 +130,7 @@ function CatalogPage(): JSX.Element {
                         page: currentPage,
                         signal: controller.signal
                     }));
-                } else {
+                } else if (activePropertyType === PropertyTypeEnum.Houses) {
                     dispatch(fetchHousesAction({
                         page: currentPage,
                         signal: controller.signal
@@ -143,7 +150,6 @@ function CatalogPage(): JSX.Element {
         };
     }, [activePropertyType, currentPage, dispatch]);
 
-    // Отдельный эффект для загрузки фильтров при изменении типа недвижимости
     useEffect(() => {
         const controller = new AbortController();
         
@@ -151,7 +157,7 @@ function CatalogPage(): JSX.Element {
             try {
                 if (activePropertyType === PropertyTypeEnum.Apartments) {
                     dispatch(fetchApartmentFiltersAction(controller.signal));
-                } else {
+                } else if (activePropertyType === PropertyTypeEnum.Houses) {
                     dispatch(fetchHouseFiltersAction(controller.signal));
                 }
             } catch (err) {
@@ -168,7 +174,6 @@ function CatalogPage(): JSX.Element {
         };
     }, [activePropertyType, dispatch]);
 
-    // Эффект для очистки при размонтировании компонента
     useEffect(() => {
         return () => {
             isMounted.current = false;
@@ -191,11 +196,19 @@ function CatalogPage(): JSX.Element {
             {isLoading && <SpinnerLoader />}
             {error && <h2>{error}</h2>}
 
-            <CardsList
-                cards={filteredAndSortedCards}
-                onPageChange={handlePageChange}
-                currentPage={currentPage}
-            />
+            {
+                !isValidPropertyType ? (
+                    <>
+                        <h2>Нет доступных объектов</h2>
+                    </>
+                ): (
+                    <CardsList
+                        cards={filteredAndSortedCards}
+                        onPageChange={handlePageChange}
+                        currentPage={currentPage}
+                    />
+                )
+            }
         </div>
     )
 }

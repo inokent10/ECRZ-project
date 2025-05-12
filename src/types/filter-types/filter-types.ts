@@ -41,10 +41,10 @@ export type FilterRange = {
   };
 };
 
+export type ServerFilterItem = FilterChoices | FilterRange;
+
 export type ApartymentFiltersProps = ServerFilterItem[];
 export type HousesFiltersProps = ServerFilterItem[];
-
-export type ServerFilterItem = FilterChoices | FilterRange;
 
 export type DropdownProps = {
   label: string;
