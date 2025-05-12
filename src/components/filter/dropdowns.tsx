@@ -47,7 +47,7 @@ const RoomsDropdown = ({ selectedValue, onReset, onApply, availableOptions }: Ro
   };
   const defaultRoomOptions = ['Студия', '1', '2', '3', '4+'];
 
-  const roomOptions = availableOptions && availableOptions.length > 0 
+  const roomOptions = availableOptions && availableOptions.length > 0
   ? normalizeOptions(availableOptions) 
     : defaultRoomOptions
 
@@ -63,13 +63,9 @@ const RoomsDropdown = ({ selectedValue, onReset, onApply, availableOptions }: Ro
     setLocalSelected(newSelection);
   };
     
-  const handleApply = () => {
-    onApply(localSelected);
-  };
+  const handleApply = () => onApply(localSelected);
 
-  const isOptionAvailable = (option: string): boolean => {
-    return roomOptions.includes(option);
-  };
+  const isOptionAvailable = (option: string): boolean => roomOptions.includes(option);
   
   return (
     <div className={styles.roomsDropdown}>
@@ -107,7 +103,7 @@ const RoomsDropdown = ({ selectedValue, onReset, onApply, availableOptions }: Ro
 
 const CheckboxDropdown = ({ options, selectedValue, onReset, onApply, availableOptions }: checkboxDropdownProps) => {
   const [localSelected, setLocalSelected] = useState([...selectedValue]);
-
+  
   useEffect(() => {
     setLocalSelected(selectedValue);
   }, [selectedValue]);

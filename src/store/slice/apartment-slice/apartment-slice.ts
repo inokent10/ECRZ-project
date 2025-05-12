@@ -28,41 +28,70 @@ import { AxiosError, AxiosInstance } from "axios";
     filtersError: null,
   }
 
-export const fetchApartmentsAction = createAsyncThunk<
-    ApiResponse<ApartmentEntity>,
-    number | void,
-    { extra: AxiosInstance; rejectValue: string }
-    >(
-        'cards/fetchApartments',
-        async (page = 1, { extra: api, rejectWithValue }) => {
-            try {
-              const { data } = await api.get<ApiResponse<ApartmentEntity>>(
-                  `${ApiRoute.Apartments}?page=${page}&limit=12`
-                );
-                
-                return data;
-            } catch (error) {
-                const axiosError = error as AxiosError<{ message: string }>;
-                return rejectWithValue(
-                  axiosError.response?.data.message || "Ошибка при загрузке квартир"
-                );
-              }
-        }
-)
+  interface FetchApartmentsParams {
+    page?: number;
+    signal?: AbortSignal;
+  }
 
-export const fetchApartmentFiltersAction = createAsyncThunk<
-ApartymentFiltersProps,
-  void,
+export const fetchApartmentsAction = createAsyncThunk<
+  ApiResponse<ApartmentEntity>,
+  FetchApartmentsParams | number | void,
   { extra: AxiosInstance; rejectValue: string }
 >(
-  'apartments/fetchApartmentFilters',
-  async (_, { extra: api, rejectWithValue }) => {
+  'cards/fetchApartments',
+  async (params, { extra: api, rejectWithValue }) => {
     try {
-      const { data } = await api.get<ApartymentFiltersProps>(ApiRoute.ApartmentsFilters);
+      let page = 1;
+      let signal: AbortSignal | undefined;
+      
+      if (typeof params === 'number') {
+        page = params;
+      } else if (params && typeof params === 'object') {
+        page = params.page || 1;
+        signal = params.signal;
+      }
+      
+      const { data } = await api.get<ApiResponse<ApartmentEntity>>(
+        `${ApiRoute.Apartments}?page=${page}&limit=12`,
+        { signal }
+      );
       
       return data;
     } catch (error) {
       const axiosError = error as AxiosError<{ message: string }>;
+      
+      if (axiosError.name === 'CanceledError' || axiosError.code === 'ERR_CANCELED') {
+        throw error;
+      }
+      
+      return rejectWithValue(
+        axiosError.response?.data.message || "Ошибка при загрузке квартир"
+      );
+    }
+  }
+);
+
+export const fetchApartmentFiltersAction = createAsyncThunk<
+  ApartymentFiltersProps,
+  AbortSignal | undefined,
+  { extra: AxiosInstance; rejectValue: string }
+>(
+  'apartments/fetchApartmentFilters',
+  async (signal, { extra: api, rejectWithValue }) => {
+    try {
+      const { data } = await api.get<ApartymentFiltersProps>(
+        ApiRoute.ApartmentsFilters,
+        { signal }
+      );
+      
+      return data;
+    } catch (error) {
+      const axiosError = error as AxiosError<{ message: string }>;
+      
+      if (axiosError.name === 'CanceledError' || axiosError.code === 'ERR_CANCELED') {
+        throw error;
+      }
+      
       return rejectWithValue(
         axiosError.response?.data.message || "Ошибка при загрузке фильтров для квартир"
       );
@@ -86,8 +115,10 @@ const apartmentsSlice = createSlice({
                 state.error = null;
             })
             .addCase(fetchApartmentsAction.rejected, (state, action) => {
+              if (action.error.name !== 'CanceledError' && action.error.code !== 'ERR_CANCELED') {
                 state.isLoading = false;
                 state.error = action.payload || "Неизвестная ошибка";
+              }
             })
         
             .addCase(fetchApartmentFiltersAction.pending, (state) => {
@@ -100,8 +131,10 @@ const apartmentsSlice = createSlice({
                 state.filtersError = null;
               })
               .addCase(fetchApartmentFiltersAction.rejected, (state, action) => {
-                state.isFiltersLoading = false;
-                state.filtersError = action.payload || "Ошибка при загрузке фильтров для квартир";
+                if (action.error.name !== 'CanceledError' && action.error.code !== 'ERR_CANCELED') {
+                  state.isFiltersLoading = false;
+                  state.filtersError = action.payload || "Ошибка при загрузке фильтров для квартир";
+                }
               })
     }
 })

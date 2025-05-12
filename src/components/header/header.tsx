@@ -6,6 +6,7 @@ import SortMenu from "../sort-menu/sort-menu";
 import { PropertyTypeEnum, SORT_OPTIONS, TYPE_SHOW_NAMES } from "../../const";
 import styles from './header.module.scss'
 import { ApartymentFiltersProps, FilterParams, HousesFiltersProps } from "@/types/filter-types/filter-types";
+import LogoHeader from "../logo-header/logo-header";
 
 type HeaderProps = {
     activePropertyType: PropertyTypeEnum;
@@ -47,6 +48,7 @@ function Header({
 
     return (
         <>
+            <LogoHeader />
             <Breadcrumbs activeType={activePropertyType} />
             
             <div className={styles.headerWrapper}>

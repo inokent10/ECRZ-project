@@ -14,7 +14,6 @@ enum ApiRoute {
   Houses = 'HOUSES',
   Lands = 'LANDS',
   Commercial = 'COMMERCIAL',
-  LegalRequests = 'LEGAL_REQUESTS',
 }
 
 const PageNames = {
@@ -42,7 +41,6 @@ const TYPE_DISPLAY_NAMES: Record<PropertyTypeEnum, string> = {
   [PropertyTypeEnum.Houses]: 'Дома',
   [PropertyTypeEnum.Lands]: 'Участки',
   [PropertyTypeEnum.Commercial]: 'Коммерческая',
-  [PropertyTypeEnum.LegalRequests]: 'Юр. запросы',
 };
 
 const TYPE_SHOW_NAMES: Record<PropertyTypeEnum, string> = {
@@ -50,7 +48,6 @@ const TYPE_SHOW_NAMES: Record<PropertyTypeEnum, string> = {
   [PropertyTypeEnum.Houses]: 'Дом',
   [PropertyTypeEnum.Lands]: 'Участки',
   [PropertyTypeEnum.Commercial]: 'Коммерческую землю',
-  [PropertyTypeEnum.LegalRequests]: 'Юр. запросы',
 };
 
    const TYPE_OPTIONS = Object.values(TYPE_DISPLAY_NAMES);
@@ -60,21 +57,20 @@ const TYPE_SHOW_NAMES: Record<PropertyTypeEnum, string> = {
      [PropertyTypeEnum.Houses]: ['Дом', 'Таунхаус', 'Часть дома', 'Дача'],
      [PropertyTypeEnum.Lands]: ['Участки до 10 сот.', 'Участки до 20 сот.', 'Участки ИЖС', 'Участки Промназначения', 'Все объекты'],
      [PropertyTypeEnum.Commercial]: ['Офис', 'Склады', 'Свободное назначение', 'Все объекты'],
-     [PropertyTypeEnum.LegalRequests]: ['Продажа недвижимости', 'Помощь в оформлении кредита', 'Оформление технической документации', 'Вывод в нежилой фонд'],
    };
 
 const REG_ONLY_NUMBERS = /[^0-9]/g;
 
 const DEFAULT_IMAGES = {
   apartment: [
-    '../public/image/huy-nguyen-AB-q9lwCVv8-unsplash.jpg',
-    '../public/image/modern-kitchen-interior-design.jpg',
-    '../public/image/skyscraper-8173578.jpg',
+    '/public/image/huy-nguyen-AB-q9lwCVv8-unsplash.jpg',
+    '/public/image/modern-kitchen-interior-design.jpg',
+    '/public/image/skyscraper-8173578.jpg',
   ],
   house: [
-    '../public/image/s-tsuchiya-f41xZ19S9dY-unsplash.jpg',
-    '../public/image/3d-room-interior-with-classic-design-furniture.jpg',
-    '../public/image/tranquil-space-with-plants.jpg',
+    '/public/image/s-tsuchiya-f41xZ19S9dY-unsplash.jpg',
+    '/public/image/3d-room-interior-with-classic-design-furniture.jpg',
+    '/public/image/tranquil-space-with-plants.jpg',
   ]
 };
 

@@ -1,4 +1,4 @@
-import { JSX, useEffect, useMemo, useState} from "react";
+import { JSX, useEffect, useMemo, useState, useRef } from "react";
 
 import { fetchApartmentFiltersAction, fetchApartmentsAction } from "@/store/slice/apartment-slice/apartment-slice";
 import { fetchHouseFiltersAction, fetchHousesAction } from "@/store/slice/houses-slice/houses-slice";
@@ -23,36 +23,44 @@ function CatalogPage(): JSX.Element {
     const [activeFilters, setActiveFilters] = useState<FilterParams>({});
     const [currentPage, setCurrentPage] = useState(FIRST_PAGE_NUMBER);
     const [currentSort, setCurrentSort] = useState<string>(SortOptionValue.Relevance);
+    const isMounted = useRef(true);
     
     const { 
-        apartments, 
-        filters: apartmentFilters, 
-        isLoading: isApartmentsLoading, 
+        apartments,
+        filters: apartmentFilters,
+        isLoading: isApartmentsLoading,
         isFiltersLoading: isApartmentFiltersLoading,
-        error: apartmentsError 
+        error: apartmentsError
       } = useAppSelector((state) => state.apartments);
       
-      const { 
-        houses, 
-        filters: houseFilters, 
-        isLoading: isHousesLoading, 
+      const {
+        houses,
+        filters: houseFilters,
+        isLoading: isHousesLoading,
         isFiltersLoading: isHouseFiltersLoading,
-        error: housesError 
+        error: housesError
       } = useAppSelector((state) => state.houses);
+    
+      const isValidPropertyType = activePropertyType === PropertyTypeEnum.Apartments || 
+      activePropertyType === PropertyTypeEnum.Houses;
 
-    const isLoading = activePropertyType === PropertyTypeEnum.Apartments 
-        ? isApartmentsLoading || isApartmentFiltersLoading 
+    const isLoading = activePropertyType === PropertyTypeEnum.Apartments
+        ? isApartmentsLoading || isApartmentFiltersLoading
         : isHousesLoading || isHouseFiltersLoading;
     
-    const error = activePropertyType === PropertyTypeEnum.Apartments 
-        ? apartmentsError 
+    const error = activePropertyType === PropertyTypeEnum.Apartments
+        ? apartmentsError
         : housesError;
 
     const filteredAndSortedCards = useMemo(() => {
+        if (!isValidPropertyType) {
+            return { entities: [], totalItems: 0 } as unknown as ApiResponse<ApartmentEntity | HouseEntity>;
+        }
+        
         const cards = activePropertyType === PropertyTypeEnum.Apartments ? apartments : houses;
-
-        const result = { ...cards }as ApiResponse<ApartmentEntity | HouseEntity>;
-        let filtered= [ ...cards.entities ];
+        
+        const result = { ...cards } as ApiResponse<ApartmentEntity | HouseEntity>;
+        let filtered = [...cards.entities];
 
         if (isApartmentFilters(activeFilters) && activeFilters.roomType?.length) {
             filtered = filtered.filter((card) => {
@@ -71,46 +79,31 @@ function CatalogPage(): JSX.Element {
         if (activeFilters.priceMin || activeFilters.priceMax) {
             filtered = filtered.filter((card) => {
                 const priceMin = activeFilters.priceMin ? parseFloat(activeFilters.priceMin) : 0;
-                const priceMax = activeFilters.priceMax ? parseFloat(activeFilters.priceMax) : 0;
-                return card.priceUsd >= priceMin && card.priceUsd <= priceMax;
+                const priceMax = activeFilters.priceMax ? parseFloat(activeFilters.priceMax) : Infinity;
+                return card.priceUsd >= priceMin && (priceMax ? card.priceUsd <= priceMax : true);
             });
         }
         
         if (activeFilters.totalAreaMin || activeFilters.totalAreaMax) {
             filtered = filtered.filter((card) => {
                 const areaMin = activeFilters.totalAreaMin ? parseFloat(activeFilters.totalAreaMin) : 0;
-                const areaMax = activeFilters.totalAreaMax ? parseFloat(activeFilters.totalAreaMax) : 0;
-                return card.totalArea >= areaMin && card.totalArea <= areaMax;
+                const areaMax = activeFilters.totalAreaMax ? parseFloat(activeFilters.totalAreaMax) : Infinity;
+                return card.totalArea >= areaMin && (areaMax ? card.totalArea <= areaMax : true);
             });
         }
 
         result.entities = filtered;
 
-        return activePropertyType === PropertyTypeEnum.Apartments
-            ? sortProperties(result, currentSort)
-            : sortProperties(result, currentSort);
-    }, [activePropertyType, apartments, houses, currentSort, activeFilters]);
+        return sortProperties(result, currentSort);
+    }, [isValidPropertyType, activePropertyType, apartments, houses, activeFilters, currentSort]);
 
     const currentFilters = activePropertyType === PropertyTypeEnum.Apartments 
-        ? apartmentFilters : houseFilters;
+    ? apartmentFilters : houseFilters;
     
     const handleFilterApply = (filters: FilterParams) => {
-            setActiveFilters(filters);
-            setCurrentPage(FIRST_PAGE_NUMBER);
-            fetchData(FIRST_PAGE_NUMBER);
+        setActiveFilters(filters);
+        setCurrentPage(FIRST_PAGE_NUMBER);
     };
-    
-    const fetchData = (page: number) => {
-        try {
-            if (activePropertyType === PropertyTypeEnum.Apartments) {
-                dispatch(fetchApartmentsAction(page));
-            } else {
-                dispatch(fetchHousesAction(page));
-            }
-        } catch {
-            return error;
-        }
-    }
     
     const handlePropertyTypeChange = (type: PropertyTypeEnum) => {
         setActivePropertyType(type);
@@ -119,37 +112,73 @@ function CatalogPage(): JSX.Element {
     };
 
     const handlePageChange = (page: number) => {
-        if (activePropertyType === PropertyTypeEnum.Apartments) {
-            setCurrentPage(page);
-            fetchData(page);
-        } else {
-            setCurrentPage(page);
-            fetchData(page);
-        }
+        setCurrentPage(page);
     };
 
     const handleSortChange = (sortValue: string) => {
-            setCurrentSort(sortValue);
-            setCurrentPage(FIRST_PAGE_NUMBER);
+        setCurrentSort(sortValue);
+        setCurrentPage(FIRST_PAGE_NUMBER);
     };
 
     useEffect(() => {
-        const fetchData = async () => {
+        const controller = new AbortController();
+        
+        const loadData = async () => {
             try {
                 if (activePropertyType === PropertyTypeEnum.Apartments) {
-                    dispatch(fetchApartmentsAction(currentPage));
-                    dispatch(fetchApartmentFiltersAction());
-                } else {
-                    dispatch(fetchHousesAction(currentPage))
-                    dispatch(fetchHouseFiltersAction())
+                    dispatch(fetchApartmentsAction({
+                        page: currentPage,
+                        signal: controller.signal
+                    }));
+                } else if (activePropertyType === PropertyTypeEnum.Houses) {
+                    dispatch(fetchHousesAction({
+                        page: currentPage,
+                        signal: controller.signal
+                    }));
                 }
-            } catch {
-               return error
+            } catch (err) {
+                if (!controller.signal.aborted) {
+                    console.error('Ошибка загрузки данных:', err);
+                }
             }
-        }
+        };
+        
+        loadData();
+        
+        return () => {
+            controller.abort();
+        };
+    }, [activePropertyType, currentPage, dispatch]);
 
-        fetchData();
-    }, [activePropertyType, currentPage, dispatch, error])
+    useEffect(() => {
+        const controller = new AbortController();
+        
+        const loadFilters = async () => {
+            try {
+                if (activePropertyType === PropertyTypeEnum.Apartments) {
+                    dispatch(fetchApartmentFiltersAction(controller.signal));
+                } else if (activePropertyType === PropertyTypeEnum.Houses) {
+                    dispatch(fetchHouseFiltersAction(controller.signal));
+                }
+            } catch (err) {
+                if (!controller.signal.aborted) {
+                    console.error('Ошибка загрузки фильтров:', err);
+                }
+            }
+        };
+        
+        loadFilters();
+        
+        return () => {
+            controller.abort();
+        };
+    }, [activePropertyType, dispatch]);
+
+    useEffect(() => {
+        return () => {
+            isMounted.current = false;
+        };
+    }, []);
     
     return (
         <div className={styles.wrapper}>
@@ -167,11 +196,19 @@ function CatalogPage(): JSX.Element {
             {isLoading && <SpinnerLoader />}
             {error && <h2>{error}</h2>}
 
-            <CardsList
-                cards={filteredAndSortedCards}
-                onPageChange={handlePageChange}
-                currentPage={currentPage}
-            />
+            {
+                !isValidPropertyType ? (
+                    <>
+                        <h2>Нет доступных объектов</h2>
+                    </>
+                ): (
+                    <CardsList
+                        cards={filteredAndSortedCards}
+                        onPageChange={handlePageChange}
+                        currentPage={currentPage}
+                    />
+                )
+            }
         </div>
     )
 }
